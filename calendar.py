@@ -1,20 +1,16 @@
 #A distributed calendar system
 
-#Distributed Systems Project 1
-#Greg Weil
-#Taoran Li
-
-#Run with python 2.7.10
-#No arguments right now
-
 import log
 
-class CalendarEvent:
+class Appointment:
 	def __init__(self, name, day, start, end):
 		self.name = name
 		self.day = day
 		self.start = start
 		self.end = end
+	
+	def __str__(self):
+		return str((self.name, self.day, self.start, self.end))
 	
 	def checkConflict(self, other):
 		"""Check if this event conflicts with another"""
@@ -26,7 +22,29 @@ class CalendarEvent:
 			return False
 		return True
 
-ev1 = CalendarEvent("Event1", 1, 24, 28)
-ev2 = CalendarEvent("Event2", 1, 28, 30)
-
-print(ev1.checkConflict(ev2))
+class Calendar:
+	def __init__(self, node, count):
+		self.log = log.Log(node, count)
+	
+	def getAppointments(self):
+		events = {}
+		for ev in self.log.events:
+			if isinstance(ev.op, Appointment):
+				events[ev.op.name] = ev.op
+			elif isinstance(ev.op, basestring):
+				del events[ev.op]
+		return [events[n] for n in events]
+	
+	def addAppointment(self, apt):
+		if self.checkConflicts(apt):
+			raise Exception('conflict')
+		self.log.event(apt)
+	
+	def removeAppointment(self, apt):
+		self.log.event(apt.name)
+	
+	def checkConflicts(self, apt):
+		for check in self.getAppointments():
+			if apt.checkConflict(check):
+				return True
+		return False
