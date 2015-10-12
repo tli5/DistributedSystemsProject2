@@ -7,6 +7,8 @@
 #Run with python 2.7.10
 #No arguments right now
 
+import log
+
 class CalendarEvent:
 	def __init__(self, name, day, start, end):
 		self.name = name
