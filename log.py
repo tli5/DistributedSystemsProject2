@@ -1,6 +1,4 @@
 #A generic distributed log framework
-#Note that this library does no communication on its own
-#It will just tell you what needs to be sent
 
 class Event:
 	def __init__(self, node, time, op):
@@ -10,9 +8,10 @@ class Event:
 
 class Log:
 	def __init__(self, node, count):
-		self.events = []
 		self.time = [[0 for i in range(count)] for j in range(count)]
 		self.node = node
+		self.events = []
+		self.update = None
 	
 	def getTime(self, node=None):
 		"""Get the number of events I know a node has"""
@@ -22,6 +21,16 @@ class Log:
 		return self.time[self.node][node]
 	
 	def event(self, op):
+		"""Add an event record to the log"""
 		self.time[self.node][self.node] += 1
 		ev = Event(self.node, self.getTime(), op)
 		self.events.append(ev)
+	
+	def notify(self, node):
+		"""Send an updated copy of the log to node"""
+		if (node == self.node):
+			pass
+	
+	def registerUpdate(self, func):
+		"""Register a function to call when we get an updated log"""
+		self.update = func

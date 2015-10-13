@@ -18,6 +18,6 @@ try:
 	cal.addAppointment(calendar.Appointment("TestConflict", 3, 22, 26))
 except Exception as e:
 	#This should happen
-	pass
+	print("This is a good thing")
 
 print([str(x) for x in cal.getAppointments()])
