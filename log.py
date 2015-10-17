@@ -18,10 +18,10 @@ class Log:
 		self.events = []
 		self.update = None
 	
-	def getTime(self, node=None):
+	def getTime(self, node = None):
 		"""Get the number of events I know a node has"""
 		"""Call with no arguments for a local count"""
-		if (node == None):
+		if not node:
 			node = self.node
 		return self.time[self.node][node]
 	
@@ -31,10 +31,11 @@ class Log:
 		ev = Event(self.node, self.getTime(), op)
 		self.events.append(ev)
 	
-	def notify(self, node):
-		"""Send an updated copy of the log to node"""
-		if (node == self.node):
-			pass
+	def notify(self, nodes = None):
+		"""Send an updated copy of the log to nodes"""
+		if not nodes:
+			nodes = range(len(self.network.peer))
+		self.network.send("Hello!", nodes)
 	
 	def receive(self, node, message):
 		"""We've received something from a node"""

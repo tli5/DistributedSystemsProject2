@@ -61,12 +61,12 @@ class Network:
 		"""A message has been received"""
 		self.recv(node, message)
 	
-	def send(self, msg, target = None):
+	def send(self, msg, targets = None):
 		"""Send a message to some or all peers"""
-		if not target:
-			target = range(len(self.peer))
-		target = [self.peer[i] for i in target if i != self.node]
-		for p in target:
+		if not targets:
+			targets = range(len(self.peer))
+		targets = [self.peer[i] for i in targets if i != self.node]
+		for p in targets:
 			sent = self.socket.sendto(msg, p.addr())
 			if sent != len(msg):
 				print(send, len(msg))
