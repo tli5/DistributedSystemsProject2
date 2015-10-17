@@ -5,11 +5,16 @@
 #Taoran Li
 
 #Run with python 2.7.10
-#No arguments right now
+#Pass config path and what node index this is
+#Example: main.py config/local.cfg 0
 
 import calendar
+import sys
 
-cal = calendar.Calendar('config/local.cfg', 0)
+config = str(sys.argv[1])
+node = int(sys.argv[2])
+
+cal = calendar.Calendar(config, node)
 
 cal.addAppointment(calendar.Appointment("Test0", 5, 24, 28))
 cal.addAppointment(calendar.Appointment("Test1", 3, 24, 28))
