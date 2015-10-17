@@ -2,6 +2,7 @@
 
 import socket
 import threading
+import pickle
 
 class Peer:
 	def __init__(self, ip, port):
@@ -59,14 +60,15 @@ class Network:
 	
 	def receive(self, node, message):
 		"""A message has been received"""
-		self.recv(node, message)
+		self.recv(node, pickle.loads(message))
 	
-	def send(self, msg, targets = None):
+	def send(self, message, targets = None):
 		"""Send a message to some or all peers"""
 		if not targets:
 			targets = range(len(self.peer))
 		targets = [self.peer[i] for i in targets if i != self.node]
+		data = pickle.dumps(message)
 		for p in targets:
-			sent = self.socket.sendto(msg, p.addr())
-			if sent != len(msg):
-				print(send, len(msg))
+			sent = self.socket.sendto(data, p.addr())
+			if sent != len(data):
+				print(send, len(data))

@@ -7,6 +7,9 @@ class Event:
 		self.node = node
 		self.time = time
 		self.op = op
+	
+	def __str__(self):
+		return str((self.node, self.time, str(self.op)))
 
 class Log:
 	def __init__(self, config, node):
@@ -35,11 +38,13 @@ class Log:
 		"""Send an updated copy of the log to nodes"""
 		if not nodes:
 			nodes = range(len(self.network.peer))
-		self.network.send("Hello!", nodes)
+		for node in nodes:
+			data = [e for e in self.events if self.time[node][e.node] < e.time]
+			self.network.send(data, [node])
 	
 	def receive(self, node, message):
 		"""We've received something from a node"""
-		print(node, message)
+		print(node, [str(e) for e in message])
 		if self.update: self.update()
 	
 	def registerUpdate(self, func):

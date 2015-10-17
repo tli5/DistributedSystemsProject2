@@ -11,7 +11,7 @@ class Appointment:
 		self.end = end
 	
 	def __str__(self):
-		return str((self.name, self.day, self.start, self.end))
+		return str((self.name, self.members, self.day, self.start, self.end))
 	
 	def checkConflict(self, other):
 		"""Check if this event conflicts with another"""
