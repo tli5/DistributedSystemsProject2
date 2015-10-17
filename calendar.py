@@ -35,6 +35,8 @@ class Calendar:
 				events[ev.op.name] = ev.op
 			elif isinstance(ev.op, basestring):
 				del events[ev.op]
+			else:
+				print("Unknown event type!")
 		return [events[n] for n in events]
 	
 	def addAppointment(self, apt):
