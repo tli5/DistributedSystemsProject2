@@ -60,7 +60,7 @@ class Network:
 	
 	def receive(self, node, message):
 		"""A message has been received"""
-		self.recv(node, pickle.loads(message))
+		if self.recv: self.recv(node, pickle.loads(message))
 	
 	def send(self, message, targets = None):
 		"""Send a message to some or all peers"""

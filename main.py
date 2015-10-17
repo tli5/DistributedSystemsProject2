@@ -17,12 +17,18 @@ node = int(sys.argv[2])
 
 cal = calendar.Calendar(config, node)
 
-cal.addAppointment(calendar.Appointment("Test0", 5, 24, 28, [node]))
-cal.addAppointment(calendar.Appointment("Test1", 3, 24, 28, [node]))
-cal.addAppointment(calendar.Appointment("Test2", 3, 20, 24, range(len(cal.log.network.peer))))
+time.sleep(3)
 
-time.sleep(5)
-print([str(x) for x in cal.getAppointments()])
+if node == 0:
+	cal.addAppointment(calendar.Appointment("Event-0-0", 0, 0, 1, [0]))
+	time.sleep(3)
+else:
+	cal.addAppointment(calendar.Appointment("Event-1-0", 1, 0, 1, [1]))
+	time.sleep(3)
+	cal.addAppointment(calendar.Appointment("Event-1-1", 0, 0, 1, [0, 1]))
 
-while True:
-	time.sleep(0)
+time.sleep(3)
+print([a.name for a in cal.getAppointments()])
+
+#while True:
+#	time.sleep(0)
