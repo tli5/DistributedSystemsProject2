@@ -42,13 +42,21 @@ class Log:
 		if not nodes:
 			nodes = range(len(self.network.peer))
 		for node in nodes:
-			data = set([e for e in self.events if self.time[node][e.node] < e.time])
+			events = set([e for e in self.events if self.time[node][e.node] < e.time])
+			data = (self.time, events)
 			self.network.send(data, [node])
 	
-	def receive(self, node, message):
+	def receive(self, node, data):
 		"""We've received something from a node"""
-		new = (message - self.events)
-		self.events |= message
+		#Union their log with ours
+		new = (data[1] - self.events)
+		self.events |= data[1]
+		#Update known log times
+		time = data[0]
+		r = range(len(self.network.peer))
+		self.time[self.node] = [max(self.time[self.node][j], time[node][j]) for j in r]
+		self.time = [[max(self.time[j][m], time[j][m]) for m in r] for j in r]
+		#Notify higher level things
 		if self.update: self.update()
 	
 	def registerUpdate(self, func):
