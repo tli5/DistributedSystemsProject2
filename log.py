@@ -11,6 +11,7 @@ class Event:
 class Log:
 	def __init__(self, config, node):
 		self.network = network.Network(config, node)
+		self.network.registerReceive(self.receive)
 		count = len(self.network.peer)
 		self.time = [[0 for i in range(count)] for j in range(count)]
 		self.node = node
@@ -34,6 +35,11 @@ class Log:
 		"""Send an updated copy of the log to node"""
 		if (node == self.node):
 			pass
+	
+	def receive(self, node, message):
+		"""We've received something from a node"""
+		print(node, message)
+		if self.update: self.update()
 	
 	def registerUpdate(self, func):
 		"""Register a function to call when we get an updated log"""

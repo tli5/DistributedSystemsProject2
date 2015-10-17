@@ -39,6 +39,8 @@ class Network:
 				self.peer.append(Peer(d[0], int(d[1])))
 	
 	def registerReceive(self, func):
+		"""Register a function to call on message receipt"""
+		"""The node index and message will be passed to it"""
 		self.recv = func
 	
 	def listen(self):
@@ -57,7 +59,7 @@ class Network:
 	
 	def receive(self, node, message):
 		"""A message has been received"""
-		print(node, message)
+		self.recv(node, message)
 	
 	def send(self, msg, target = None):
 		"""Send a message to some or all peers"""
