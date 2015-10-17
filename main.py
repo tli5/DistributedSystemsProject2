@@ -9,7 +9,7 @@
 
 import calendar
 
-cal = calendar.Calendar(0, 1)
+cal = calendar.Calendar('config/local.cfg', 0)
 
 cal.addAppointment(calendar.Appointment("Test0", 5, 24, 28))
 cal.addAppointment(calendar.Appointment("Test1", 3, 24, 28))

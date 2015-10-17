@@ -23,8 +23,8 @@ class Appointment:
 		return True
 
 class Calendar:
-	def __init__(self, node, count):
-		self.log = log.Log(node, count)
+	def __init__(self, config, node):
+		self.log = log.Log(config, node)
 	
 	def getAppointments(self):
 		"""Get a list of all appointments in the local calendar"""

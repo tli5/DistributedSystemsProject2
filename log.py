@@ -9,8 +9,9 @@ class Event:
 		self.op = op
 
 class Log:
-	def __init__(self, node, count):
-		self.network = network.Network(node, count)
+	def __init__(self, config, node):
+		self.network = network.Network(config, node)
+		count = len(self.network.peer)
 		self.time = [[0 for i in range(count)] for j in range(count)]
 		self.node = node
 		self.events = []
