@@ -41,11 +41,18 @@ class Network:
 	
 	def listen(self):
 		while True:
-			data, addr = self.socket.recvfrom(4096)
-			print(addr, data)
+			try:
+				data, addr = self.socket.recvfrom(4096)
+				for i in range(len(self.peer)):
+					if self.peer[i].addr() != addr:
+						continue
+					self.receive(i, data)
+					break
+			except socket.error as error:
+				pass
 	
 	def receive(self, node, message):
-		print(self.peer[node].addr(), message)
+		print(node, message)
 	
 	def send(self, msg, target = None):
 		if not target:
