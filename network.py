@@ -30,6 +30,8 @@ class Network:
 		self.thread.start()
 	
 	def loadConfig(self, path):
+		"""Load the network config file"""
+		"""It is a set of addresses separated by newlines"""
 		f = open(path, 'r')
 		for l in f.read().split('\n'):
 			if l:
@@ -40,6 +42,8 @@ class Network:
 		self.recv = func
 	
 	def listen(self):
+		"""Poll the socket for incoming messages"""
+		"""Run on a separate thread"""
 		while True:
 			try:
 				data, addr = self.socket.recvfrom(4096)
@@ -52,9 +56,11 @@ class Network:
 				pass
 	
 	def receive(self, node, message):
+		"""A message has been received"""
 		print(node, message)
 	
 	def send(self, msg, target = None):
+		"""Send a message to some or all peers"""
 		if not target:
 			target = range(len(self.peer))
 		target = [self.peer[i] for i in target if i != self.node]
