@@ -28,7 +28,7 @@ except Exception as e:
 
 print([str(x) for x in cal.getAppointments()])
 
-cal.log.notify()
+cal.log.send()
 
 while True:
 	time.sleep(0)

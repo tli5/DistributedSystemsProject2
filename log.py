@@ -31,7 +31,7 @@ class Log:
 		ev = Event(self.node, self.getTime(), op)
 		self.events.append(ev)
 	
-	def notify(self, nodes = None):
+	def send(self, nodes = None):
 		"""Send an updated copy of the log to nodes"""
 		if not nodes:
 			nodes = range(len(self.network.peer))

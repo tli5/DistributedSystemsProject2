@@ -26,6 +26,7 @@ class Appointment:
 class Calendar:
 	def __init__(self, config, node):
 		self.log = log.Log(config, node)
+		self.node = node
 	
 	def getAppointments(self):
 		"""Get a list of all appointments in the local calendar"""
@@ -38,7 +39,7 @@ class Calendar:
 				del events[ev.op]
 			else:
 				print("Unknown event type!")
-		return [events[n] for n in events]
+		return [events[n] for n in events if self.node in events[n].members]
 	
 	def addAppointment(self, apt):
 		"""Add an appointment to the calendar"""
@@ -46,13 +47,13 @@ class Calendar:
 		if self.checkConflicts(apt):
 			raise Exception('conflict')
 		self.log.event(apt)
-		self.log.notify(apt.members)
+		self.log.send(apt.members)
 	
 	def removeAppointment(self, apt):
 		"""Remove an event from the calendar"""
 		"""If other users are members, they will be notified"""
 		self.log.event(apt.name)
-		self.log.notify(apt.members)
+		self.log.send(apt.members)
 	
 	def checkConflicts(self, apt):
 		"""Check if an appointment conflicts with the local calendar"""
