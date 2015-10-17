@@ -10,6 +10,7 @@
 
 import calendar
 import sys
+import time
 
 config = str(sys.argv[1])
 node = int(sys.argv[2])
@@ -26,3 +27,8 @@ except Exception as e:
 	print("This is a good thing")
 
 print([str(x) for x in cal.getAppointments()])
+
+cal.log.network.send('hello!')
+
+while True:
+	time.sleep(0)
