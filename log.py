@@ -47,7 +47,8 @@ class Log:
 	
 	def receive(self, node, message):
 		"""We've received something from a node"""
-		print(node, [str(e) for e in message])
+		new = (message - self.events)
+		self.events |= message
 		if self.update: self.update()
 	
 	def registerUpdate(self, func):
