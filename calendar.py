@@ -33,6 +33,7 @@ def eventIsDel(e):
 class Calendar:
 	def __init__(self, config, node):
 		self.log = log.Log(config, node)
+		self.log.registerReceive(self.receive)
 		self.node = node
 	
 	def getAppointments(self):
@@ -59,7 +60,30 @@ class Calendar:
 	
 	def checkConflicts(self, apt):
 		"""Check if an appointment conflicts with the local calendar"""
-		for check in self.getAppointments():
-			if apt.checkConflict(check):
-				return True
-		return False
+		for other in self.getAppointments():
+			if apt == other:
+				continue
+			if apt.checkConflict(other):
+				return other
+		return None
+	
+	def receive(self, node, events):
+		"""Process a received log for conflicting events"""
+		for apt in [e.op for e in events if eventIsAdd(e)]:
+			if self.node not in apt.members:
+				continue
+			conflict = self.checkConflicts(apt)
+			if conflict:
+				#Keep the event with more members
+				if len(apt.members) < len(conflict.members):
+					self.removeAppointment(apt)
+				elif len(apt.members) > len(conflict.members):
+					self.removeAppointment(conflict)
+				#Keep the event with a 'lesser' name
+				elif apt.name > conflict.name:
+					self.removeAppointment(apt)
+				elif apt.name < conflict.name:
+					self.removeAppointment(conflict)
+				#This means two appointments have the same name
+				else:
+					print("Multiple appointments with name " + spt.name)
