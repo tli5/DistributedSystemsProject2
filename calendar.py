@@ -23,6 +23,13 @@ class Appointment:
 			return False
 		return True
 
+def eventIsAdd(e):
+	"""This log event adds an appointment"""
+	return isinstance(e.op, Appointment)
+def eventIsDel(e):
+	"""This log event removes an appointment"""
+	return isinstance(e.op, basestring)
+
 class Calendar:
 	def __init__(self, config, node):
 		self.log = log.Log(config, node)
@@ -31,8 +38,8 @@ class Calendar:
 	def getAppointments(self):
 		"""Get a list of all appointments in the local calendar"""
 		"""Order is completely arbitrary"""
-		opAdd = [e.op for e in self.log.events if isinstance(e.op, Appointment)]
-		opDel = [e.op for e in self.log.events if isinstance(e.op, basestring)]
+		opAdd = [e.op for e in self.log.events if eventIsAdd(e)]
+		opDel = [e.op for e in self.log.events if eventIsDel(e)]
 		appointments = [op for op in opAdd if op.name not in opDel]
 		return [apt for apt in appointments if self.node in apt.members]
 	

@@ -22,7 +22,7 @@ class Log:
 		self.time = [[0 for i in range(count)] for j in range(count)]
 		self.node = node
 		self.events = set()
-		self.update = None
+		self.recv = None
 	
 	def getTime(self, node = None):
 		"""Get the number of events I know a node has"""
@@ -48,8 +48,8 @@ class Log:
 	
 	def receive(self, node, data):
 		"""We've received something from a node"""
-		#Union their log with ours
 		new = (data[1] - self.events)
+		#Union their log with ours
 		self.events |= data[1]
 		#Update known log times
 		time = data[0]
@@ -57,8 +57,8 @@ class Log:
 		self.time[self.node] = [max(self.time[self.node][j], time[node][j]) for j in r]
 		self.time = [[max(self.time[j][m], time[j][m]) for m in r] for j in r]
 		#Notify higher level things
-		if self.update: self.update()
+		if self.recv: self.recv(node, new)
 	
-	def registerUpdate(self, func):
+	def registerReceive(self, func):
 		"""Register a function to call when we get an updated log"""
-		self.update = func
+		self.recv = func
