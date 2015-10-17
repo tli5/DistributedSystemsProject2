@@ -17,11 +17,11 @@ node = int(sys.argv[2])
 
 cal = calendar.Calendar(config, node)
 
-cal.addAppointment(calendar.Appointment("Test0", 5, 24, 28))
-cal.addAppointment(calendar.Appointment("Test1", 3, 24, 28))
-cal.addAppointment(calendar.Appointment("Test2", 3, 20, 24))
+cal.addAppointment(calendar.Appointment("Test0", 5, 24, 28, [node]))
+cal.addAppointment(calendar.Appointment("Test1", 3, 24, 28, [node]))
+cal.addAppointment(calendar.Appointment("Test2", 3, 20, 24, range(len(cal.log.network.peer))))
 try:
-	cal.addAppointment(calendar.Appointment("TestConflict", 3, 22, 26))
+	cal.addAppointment(calendar.Appointment("TestConflict", 3, 22, 26, [node]))
 except Exception as e:
 	#This should happen
 	print("This is a good thing")
