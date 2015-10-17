@@ -10,6 +10,9 @@ class Event:
 	
 	def __str__(self):
 		return str((self.node, self.time, str(self.op)))
+	
+	def __hash__(self):
+		return hash((self.node, self.time))
 
 class Log:
 	def __init__(self, config, node):
@@ -18,7 +21,7 @@ class Log:
 		count = len(self.network.peer)
 		self.time = [[0 for i in range(count)] for j in range(count)]
 		self.node = node
-		self.events = []
+		self.events = set()
 		self.update = None
 	
 	def getTime(self, node = None):
@@ -31,15 +34,15 @@ class Log:
 	def event(self, op):
 		"""Add an event record to the log"""
 		self.time[self.node][self.node] += 1
-		ev = Event(self.node, self.getTime(), op)
-		self.events.append(ev)
+		event = Event(self.node, self.getTime(), op)
+		self.events.add(event)
 	
 	def send(self, nodes = None):
 		"""Send an updated copy of the log to nodes"""
 		if not nodes:
 			nodes = range(len(self.network.peer))
 		for node in nodes:
-			data = [e for e in self.events if self.time[node][e.node] < e.time]
+			data = set([e for e in self.events if self.time[node][e.node] < e.time])
 			self.network.send(data, [node])
 	
 	def receive(self, node, message):
