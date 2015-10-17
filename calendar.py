@@ -31,15 +31,10 @@ class Calendar:
 	def getAppointments(self):
 		"""Get a list of all appointments in the local calendar"""
 		"""Order is completely arbitrary"""
-		events = {}
-		for ev in self.log.events:
-			if isinstance(ev.op, Appointment):
-				events[ev.op.name] = ev.op
-			elif isinstance(ev.op, basestring):
-				del events[ev.op]
-			else:
-				print("Unknown event type!")
-		return [events[n] for n in events if self.node in events[n].members]
+		opAdd = [e.op for e in self.log.events if isinstance(e.op, Appointment)]
+		opDel = [e.op for e in self.log.events if isinstance(e.op, basestring)]
+		appointments = [op for op in opAdd if op.name not in opDel]
+		return [apt for apt in appointments if self.node in apt.members]
 	
 	def addAppointment(self, apt):
 		"""Add an appointment to the calendar"""
