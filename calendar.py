@@ -91,4 +91,4 @@ class Calendar(object):
 					self.removeAppointment(conflict)
 				#This means two appointments have the same name
 				else:
-					print("Multiple appointments with name " + spt.name)
+					print("Multiple appointments with name " + apt.name)

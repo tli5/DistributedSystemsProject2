@@ -14,6 +14,10 @@ class Event(object):
 	
 	def __hash__(self):
 		return hash((self.node, self.time))
+	def __eq__(self, other):
+		return hash(self) == hash(other)
+	def __ne__(self, other):
+		return hash(self) != hash(other)
 def evLoad(data):
 	return Event(data['node'], data['time'], data['op'])
 def evSave(event):
