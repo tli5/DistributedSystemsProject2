@@ -9,6 +9,7 @@
 #Example: main.py config/local.cfg 0
 
 import calendar
+import random
 import sys
 import time
 
@@ -17,18 +18,27 @@ node = int(sys.argv[2])
 
 cal = calendar.Calendar(config, node)
 
-time.sleep(3)
-
-if node == 0:
-	cal.addAppointment(calendar.Appointment("Event-0-0", 0, 0, 1, [0]))
-	time.sleep(3)
-else:
-	cal.addAppointment(calendar.Appointment("Event-1-0", 1, 0, 1, [1]))
-	time.sleep(3)
-	cal.addAppointment(calendar.Appointment("Event-1-1", 0, 0, 1, [0, 1]))
-
-time.sleep(3)
-print([a.name for a in cal.getAppointments()])
-
-#while True:
-#	time.sleep(0)
+while True:
+	if random.random() < 0.75:
+		name = 'Event-' + str(node) + '-' + str(random.randrange(2 ** 64))
+		day = random.randrange(7)
+		day = random.randrange(7)
+		start = random.randrange(47)
+		stop = random.randrange(1, 48-start)
+		members = [i for i in range(len(cal.log.network.peer))
+			if random.random() < 0.4 or i == node]
+		appointment = calendar.Appointment(name, day, start, stop, members)
+		try:
+			cal.addAppointment(appointment)
+			print('add ' + str(appointment))
+		except Exception as e:
+			print('conflict')
+	else:
+		appointments = cal.getAppointments()
+		if appointments:
+			index = random.randrange(len(appointments))
+			cal.removeAppointment(appointments[index])
+			print('remove ' + appointments[index].name)
+		else:
+			print('no appointments')
+	time.sleep(random.uniform(1, 5))
