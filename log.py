@@ -1,6 +1,7 @@
 #A generic distributed log framework
 
 import network
+from pprint import pformat
 
 class Event(object):
 	def __init__(self, node, time, op):
@@ -13,6 +14,10 @@ class Event(object):
 	
 	def __hash__(self):
 		return hash((self.node, self.time))
+def evLoad(data):
+	return Event(data['node'], data['time'], data['op'])
+def evSave(event):
+	return (event.__dict__)
 
 class Log(object):
 	def __init__(self, config, node):
@@ -23,6 +28,8 @@ class Log(object):
 		self.node = node
 		self.events = set()
 		self.recv = None
+		self.path = ('data' + str(node) + '.sav')
+		self.load()
 	
 	def getTime(self, node = None):
 		"""Get the number of events I know a node has"""
@@ -36,6 +43,7 @@ class Log(object):
 		self.time[self.node][self.node] += 1
 		event = Event(self.node, self.getTime(), op)
 		self.events.add(event)
+		self.save()
 	
 	def send(self, nodes = None):
 		"""Send an updated copy of the log to nodes"""
@@ -58,7 +66,24 @@ class Log(object):
 		self.time = [[max(self.time[j][m], time[j][m]) for m in r] for j in r]
 		#Notify higher level things
 		if self.recv: self.recv(node, new)
+		#Save everything
+		self.save()
 	
 	def registerReceive(self, func):
 		"""Register a function to call when we get an updated log"""
 		self.recv = func
+	
+	def save(self):
+		"""Write the current log to disk"""
+		f = open(self.path, 'w')
+		f.write(pformat(self.time))
+		f.write('\n')
+		f.write(pformat([ev.__dict__ for ev in self.events]))
+		f.close()
+	def load(self):
+		f = open(self.path, 'r')
+		data = f.read().split('\n')
+		f.close()
+		self.time = eval(data[0])
+		eventData = eval('\n'.join(data[1:]))
+		self.events = set([evLoad(e) for e in eventData])
