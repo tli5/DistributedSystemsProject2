@@ -2,7 +2,7 @@
 
 import log
 
-class Appointment:
+class Appointment(object):
 	def __init__(self, name, day, start, end, members):
 		self.name = name
 		self.members = members
@@ -30,7 +30,7 @@ def eventIsDel(e):
 	"""This log event removes an appointment"""
 	return isinstance(e.op, basestring)
 
-class Calendar:
+class Calendar(object):
 	def __init__(self, config, node):
 		self.log = log.Log(config, node)
 		self.log.registerReceive(self.receive)

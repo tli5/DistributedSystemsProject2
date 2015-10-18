@@ -4,7 +4,7 @@ import socket
 import threading
 import pickle
 
-class Peer:
+class Peer(object):
 	def __init__(self, ip, port):
 		self.ip = ip
 		self.port = port
@@ -15,7 +15,7 @@ class Peer:
 	def addr(self):
 		return (self.ip, self.port)
 
-class Network:
+class Network(object):
 	def __init__(self, config, node):
 		self.peer = []
 		self.node = node

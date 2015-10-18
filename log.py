@@ -2,7 +2,7 @@
 
 import network
 
-class Event:
+class Event(object):
 	def __init__(self, node, time, op):
 		self.node = node
 		self.time = time
@@ -14,7 +14,7 @@ class Event:
 	def __hash__(self):
 		return hash((self.node, self.time))
 
-class Log:
+class Log(object):
 	def __init__(self, config, node):
 		self.network = network.Network(config, node)
 		self.network.registerReceive(self.receive)
