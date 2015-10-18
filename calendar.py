@@ -11,7 +11,7 @@ class Appointment(object):
 		self.end = end
 	
 	def __str__(self):
-		return str((self.name, self.members, self.day, self.start, self.end))
+		return str(aptSave(self))
 	
 	def checkConflict(self, other):
 		"""Check if this event conflicts with another"""
@@ -22,10 +22,15 @@ class Appointment(object):
 		if (self.end <= other.start):
 			return False
 		return True
+def aptLoad(data):
+	return Appointment(data['name'], data['day'],
+		data['start'], data['end'], data['members'])
+def aptSave(appointment):
+	return (appointment.__dict__)
 
 def eventIsAdd(e):
 	"""This log event adds an appointment"""
-	return isinstance(e.op, Appointment)
+	return isinstance(e.op, dict)
 def eventIsDel(e):
 	"""This log event removes an appointment"""
 	return isinstance(e.op, basestring)
@@ -39,7 +44,7 @@ class Calendar(object):
 	def getAppointments(self):
 		"""Get a list of all appointments in the local calendar"""
 		"""Order is completely arbitrary"""
-		opAdd = [e.op for e in self.log.events if eventIsAdd(e)]
+		opAdd = [aptLoad(e.op) for e in self.log.events if eventIsAdd(e)]
 		opDel = [e.op for e in self.log.events if eventIsDel(e)]
 		appointments = [op for op in opAdd if op.name not in opDel]
 		return [apt for apt in appointments if self.node in apt.members]
@@ -49,7 +54,7 @@ class Calendar(object):
 		"""If other users are a member, they will be notified"""
 		if self.checkConflicts(apt):
 			raise Exception('conflict')
-		self.log.event(apt)
+		self.log.event(aptSave(apt))
 		self.log.send(apt.members)
 	
 	def removeAppointment(self, apt):
@@ -69,7 +74,7 @@ class Calendar(object):
 	
 	def receive(self, node, events):
 		"""Process a received log for conflicting events"""
-		for apt in [e.op for e in events if eventIsAdd(e)]:
+		for apt in [aptLoad(e.op) for e in events if eventIsAdd(e)]:
 			if self.node not in apt.members:
 				continue
 			conflict = self.checkConflicts(apt)
