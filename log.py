@@ -25,8 +25,8 @@ class Log(object):
 		self.network.registerReceive(self.receive)
 		count = len(self.network.peer)
 		self.time = [[0 for i in range(count)] for j in range(count)]
-		self.node = node
 		self.events = set()
+		self.node = node
 		self.recv = None
 		self.path = ('data' + str(node) + '.sav')
 		self.load()
@@ -80,10 +80,16 @@ class Log(object):
 		f.write('\n')
 		f.write(pformat([ev.__dict__ for ev in self.events]))
 		f.close()
+	
 	def load(self):
-		f = open(self.path, 'r')
-		data = f.read().split('\n')
-		f.close()
-		self.time = eval(data[0])
-		eventData = eval('\n'.join(data[1:]))
-		self.events = set([evLoad(e) for e in eventData])
+		try:
+			f = open(self.path, 'r')
+			data = f.read().split('\n')
+			f.close()
+			self.time = eval(data[0])
+			eventData = eval('\n'.join(data[1:]))
+			self.events = set([evLoad(e) for e in eventData])
+		except Exception as e:
+			count = len(self.network.peer)
+			self.time = [[0 for i in range(count)] for j in range(count)]
+			self.events = set()
