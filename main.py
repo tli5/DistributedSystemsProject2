@@ -24,7 +24,7 @@ while True:
 		day = random.randrange(7)
 		day = random.randrange(7)
 		start = random.randrange(47)
-		stop = random.randrange(1, 48-start)
+		stop = (random.randrange(1, 48-start) + start)
 		members = [i for i in range(len(cal.log.network.peer))
 			if random.random() < 0.4 or i == node]
 		appointment = calendar.Appointment(name, day, start, stop, members)

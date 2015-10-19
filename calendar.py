@@ -74,6 +74,7 @@ class Calendar(object):
 	
 	def receive(self, node, events):
 		"""Process a received log for conflicting events"""
+		#Check for conflicts in newly added appointments
 		for apt in [aptLoad(e.op) for e in events if eventIsAdd(e)]:
 			if self.node not in apt.members:
 				continue
@@ -92,3 +93,13 @@ class Calendar(object):
 				#This means two appointments have the same name
 				else:
 					print("Multiple appointments with name " + apt.name)
+		#Check for appointments which can be removed from the log
+		evDel = [e for e in self.log.events if eventIsDel(e)]
+		evDelRemove = [e for e in evDel if min(self.log.time[:][e.node]) >= e.time]
+		aptRemove = [e.op for e in evDelRemove]
+		evAdd = [e for e in self.log.events if eventIsAdd(e)]
+		evAddRemove = [e for e in evAdd if e.op['name'] in aptRemove]
+		for e in set(evAddRemove + evDelRemove):
+			self.log.events.remove(e)
+		#Save the cleaned log
+		self.log.save()
