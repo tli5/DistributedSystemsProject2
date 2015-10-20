@@ -30,19 +30,30 @@ def addAppointment():
 		print('conflict')
 
 def showAppointments():
-	appointments = cal.getAppointments()
-	for i in range(len(appointments)):
-		print i, ':', str(appointments[i])
-	return appointments
+	#appointments = cal.getAppointments()
+	nodesAppointments = cal.getAppointmentsByNodes()
+	#for i in range(len(appointments)):
+	#	print i, ':', str(appointments[i])
+	#return appointments
+
+	for node in range (len(nodesAppointments) ):
+		appointments = nodesAppointments[node]
+		print '------------------------------'
+		print 'node:', node
+		for i in range(len(appointments)):
+			print i, ':', str(appointments[i])
+
+	return nodesAppointments
 
 def delAppointment():
 	print('select an appointment to delete:')
-	appointments = showAppointments()
+	nodesAppointments = showAppointments()
 
-	if appointments:
-		index = int(raw_input('appointment index for deletion:') )
-		cal.removeAppointment(appointments[index])
-		print('deleted appointment: ' + appointments[index].name)
+	if nodesAppointments:
+		node = int(raw_input('node of appointment to delete:') )
+		index = int(raw_input('index of appointment in that node:') )
+		cal.removeAppointment(nodesAppointments[node][index])
+		print('deleted appointment: ' + nodesAppointments[node][index].name)
 		print 'current appointments:'
 		showAppointments()
 	else:
@@ -95,7 +106,6 @@ while True:
 	    '3': refresh,
 	    '4': randomTest
 	}[option]
-
 	exe()
 
 

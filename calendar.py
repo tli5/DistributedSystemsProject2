@@ -49,6 +49,16 @@ class Calendar(object):
 		appointments = [op for op in opAdd if op.name not in opDel]
 		return [apt for apt in appointments if self.node in apt.members]
 	
+	def getAppointmentsByNodes(self):
+		"""Get a list of appointments for each node acknowledged by the current node"""
+		peerCount = len(self.log.network.peer)
+		appointments = [None] * peerCount
+		for node in range(peerCount):
+			opAdd = [aptLoad(e.op) for e in self.log.events if eventIsAdd(e) and e.node == node ]
+			opDel = [e.op for e in self.log.events if eventIsDel(e) and e.node == node ]
+			appointments[node] = [op for op in opAdd if op.name not in opDel]
+		return appointments
+
 	def addAppointment(self, apt):
 		"""Add an appointment to the calendar"""
 		"""If other users are a member, they will be notified"""
