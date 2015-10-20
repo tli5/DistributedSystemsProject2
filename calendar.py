@@ -13,6 +13,9 @@ class Appointment(object):
 	def __str__(self):
 		return str(aptSave(self))
 	
+	def __eq__(self, other):
+		return self.name == other.name
+	
 	def checkConflict(self, other):
 		"""Check if this event conflicts with another"""
 		if (self.day != other.day):
