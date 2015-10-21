@@ -38,7 +38,10 @@ def showAppointments():
 		appointments = nodesAppointments[node]
 		print 'current node:', node
 		for i in range(len(appointments)):
-			print i, ':', str(appointments[i])
+			print '-------------------------------------------------'
+			print 'appointment index:', i, '   name:', appointments[i].name
+			print 'start:', appointments[i].start, ' end:', appointments[i].end
+			print 'members:', str(appointments[i].members )
 
 	return nodesAppointments
 
@@ -48,7 +51,7 @@ def delAppointment():
 
 	if nodesAppointments:
 		node = cal.node
-		index = int(raw_input('index of appointment in current node:') )
+		index = int(raw_input('index of appointment to delete:') )
 		cal.removeAppointment(nodesAppointments[node][index])
 		print('deleted appointment: ' + nodesAppointments[node][index].name)
 		print 'current appointments:'
