@@ -36,12 +36,12 @@ def showAppointments():
 		if node != cal.node:
 			continue
 		appointments = nodesAppointments[node]
+		
 		print 'current node:', node
 		for i in range(len(appointments)):
-			print '-------------------------------------------------'
-			print 'appointment index:', i, '   name:', appointments[i].name
-			print 'start:', appointments[i].start, ' end:', appointments[i].end
-			print 'members:', str(appointments[i].members )
+			print '\tappointment index:', i, '   name:', appointments[i].name
+			print '\tstart:', appointments[i].start, ' end:', appointments[i].end
+			print '\tmembers:', str(appointments[i].members )
 
 	return nodesAppointments
 
