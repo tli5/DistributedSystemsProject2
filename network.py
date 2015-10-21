@@ -24,7 +24,7 @@ class Network(object):
 		self.loadConfig(config)
 		#Create a socket
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.socket.bind(self.peer[self.node].addr())
+		self.socket.bind(('', self.peer[self.node].port))
 		#Create a thread for the socket
 		self.thread = threading.Thread(target = self.listen)
 		self.thread.setDaemon(True)
