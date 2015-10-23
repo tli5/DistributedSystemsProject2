@@ -44,11 +44,11 @@ def showAppointments():
 		
 		for i in range(len(appointments)):
 			appointment = appointments[i]
-			print 'name:', appointment.name, ' (index:'+str(i)+')'
-			print '\ton', DAYS[appointment.day], 'from', printTime(appointment.start), 'to', printTime(appointment.end)
+			print 'Name:', appointment.name, ' (Index:'+str(i)+')'
+			print '\ton', DAYS[appointment.day], 'From', printTime(appointment.start), 'To', printTime(appointment.end)
 			if len(appointment.members) > 1 :
 				print '\tmembers:', str(appointments[i].members )
-		print 'With node ', node
+		print 'Current Node:', node
 	return nodesAppointments
 
 def delAppointment():
@@ -104,13 +104,14 @@ node = int(sys.argv[2])
 cal = calendar.Calendar(config, node)
 
 while True:
-	print 'Menu: ', '1: Add Appointment', '2: Remove Appointment', '3: Clear Log Files', '4: Random Test'
+	print 'Menu: ', '1: Add Appointment', '2: Remove Appointment', '3: Clear Log Files', '4: Random Test', '5: Display Appointments'
 	option = raw_input('Option:')
 	exe = {
 	    '1': addAppointment,
 	    '2': delAppointment,
 	    '3': clearLog,
-	    '4': randomTest
+	    '4': randomTest,
+	    '5': showAppointments
 	}[option]
 	exe()
 
