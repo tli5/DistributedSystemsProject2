@@ -29,20 +29,26 @@ def addAppointment():
 	except Exception as e:
 		print('conflict')
 
+def printTime(time):
+	return (str) (time / 2) + ':' + ('00' if time % 2 == 0 else '30')
+
 def showAppointments():
 	nodesAppointments = cal.getAppointmentsByNodes()
+	DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
 	for node in range (len(nodesAppointments) ):
 		"""skipping all other nodes' appointments"""
 		if node != cal.node:
 			continue
 		appointments = nodesAppointments[node]
 		
-		print 'current node:', node
 		for i in range(len(appointments)):
-			print '\tappointment index:', i, '   name:', appointments[i].name
-			print '\tstart:', appointments[i].start, ' end:', appointments[i].end
-			print '\tmembers:', str(appointments[i].members )
-
+			appointment = appointments[i]
+			print 'name:', appointment.name, ' (index:'+str(i)+')'
+			print '\ton', DAYS[appointment.day], 'from', printTime(appointment.start), 'to', printTime(appointment.end)
+			if len(appointment.members) > 1 :
+				print '\tmembers:', str(appointments[i].members )
+		print 'With node ', node
 	return nodesAppointments
 
 def delAppointment():
@@ -59,7 +65,7 @@ def delAppointment():
 	else:
 		print('no appointments available')
 
-def refresh():
+def clearLog():
 	files = glob.glob('./data*.sav')
 	for file in files:
 		print 'deleting file:', file
@@ -98,12 +104,12 @@ node = int(sys.argv[2])
 cal = calendar.Calendar(config, node)
 
 while True:
-	print 'Menu: ', '1: Add Appointment', '2: Remove Appointment', '3: Refresh Log Files', '4: Random Test'
+	print 'Menu: ', '1: Add Appointment', '2: Remove Appointment', '3: Clear Log Files', '4: Random Test'
 	option = raw_input('Option:')
 	exe = {
 	    '1': addAppointment,
 	    '2': delAppointment,
-	    '3': refresh,
+	    '3': clearLog,
 	    '4': randomTest
 	}[option]
 	exe()
