@@ -88,7 +88,7 @@ class Log(object):
 		f = open(self.path, 'w')
 		f.write(pformat(self.time))
 		f.write('\n')
-		f.write(pformat([ev.__dict__ for ev in self.events]))
+		f.write(pformat([evSave(ev) for ev in self.events]))
 		f.close()
 	
 	def load(self):
