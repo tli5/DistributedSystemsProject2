@@ -6,7 +6,7 @@
 
 #Run with python 2.7.10
 #Pass config path and what node index this is
-#Example: main.py config/local.cfg 0
+#Example: ini.py config/local.cfg 0
 
 import calendar
 import random
