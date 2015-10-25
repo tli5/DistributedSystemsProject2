@@ -35,9 +35,8 @@ class Log(object):
 		self.path = ('data' + str(node) + '.sav')
 		self.load()
 		#Update peers
-		peers = [i for i in range(count) if i != self.node]
-		self.network.send(('req', self.node), peers)
-		self.send(peers)
+		self.network.send(('req', self.node))
+		self.send()
 	
 	def getTime(self, node = None):
 		"""Get the number of events I know a node has"""
