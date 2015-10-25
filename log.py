@@ -34,6 +34,10 @@ class Log(object):
 		self.recv = None
 		self.path = ('data' + str(node) + '.sav')
 		self.load()
+		#Update peers
+		peers = [i for i in range(count) if i != self.node]
+		self.network.send(('req', self.node), peers)
+		self.send(peers)
 	
 	def getTime(self, node = None):
 		"""Get the number of events I know a node has"""
@@ -55,23 +59,26 @@ class Log(object):
 			nodes = range(len(self.network.peer))
 		for node in nodes:
 			events = set([e for e in self.events if self.time[node][e.node] < e.time])
-			data = (self.time, events)
+			data = ('log', self.time, events)
 			self.network.send(data, [node])
 	
 	def receive(self, node, data):
 		"""We've received something from a node"""
-		new = (data[1] - self.events)
-		#Union their log with ours
-		self.events |= data[1]
-		#Update known log times
-		time = data[0]
-		r = range(len(self.network.peer))
-		self.time[self.node] = [max(self.time[self.node][j], time[node][j]) for j in r]
-		self.time = [[max(self.time[j][m], time[j][m]) for m in r] for j in r]
-		#Notify higher level things
-		if self.recv: self.recv(node, new)
-		#Save everything
-		self.save()
+		if data[0] == 'log':
+			new = (data[2] - self.events)
+			#Union their log with ours
+			self.events |= data[2]
+			#Update known log times
+			time = data[1]
+			r = range(len(self.network.peer))
+			self.time[self.node] = [max(self.time[self.node][j], time[node][j]) for j in r]
+			self.time = [[max(self.time[j][m], time[j][m]) for m in r] for j in r]
+			#Notify higher level things
+			if self.recv: self.recv(node, new)
+			#Save everything
+			self.save()
+		elif data[0] == 'req':
+			self.send([data[1]])
 	
 	def registerReceive(self, func):
 		"""Register a function to call when we get an updated log"""
