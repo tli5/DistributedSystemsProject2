@@ -18,10 +18,12 @@ class Peer(object):
 class Network(object):
 	def __init__(self, config, node):
 		self.peer = []
+		self.leader = 0
 		self.node = node
 		self.recv = None
 		#Load config
 		self.loadConfig(config)
+		
 		#Create a socket
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self.socket.bind(('', self.peer[self.node].port))
@@ -64,11 +66,17 @@ class Network(object):
 	
 	def send(self, message, targets = None):
 		"""Send a message to some or all peers"""
+		"""Send to a negative number to send to the leader"""
 		if not targets:
 			targets = range(len(self.peer))
-		targets = [self.peer[i] for i in targets if i != self.node]
+		targets = [self.leader if i < 0 else i for i in targets]
 		data = pickle.dumps(message)
-		for p in targets:
-			sent = self.socket.sendto(data, p.addr())
+		for i in targets:
+			if i == self.node: continue
+			sent = self.socket.sendto(data, self.peer[i].addr())
 			if sent != len(data):
-				print(send, len(data))
+				print(i, sent, len(data))
+		#Send to all other nodes before processing locally
+		for i in targets:
+			if i != self.node: continue
+			self.receive(self.node, message)
