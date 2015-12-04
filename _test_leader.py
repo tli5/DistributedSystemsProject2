@@ -11,11 +11,12 @@ netInternal = network.Network('config/local.cfg', node)
 network = leader.LeaderNetwork(netInternal)
 
 def recv(msg, src):
-	print(src, msg)
+	#print(src, msg)
+	pass
 network.registerReceive(recv)
 
 print('This is node ' + str(node))
 
 while True:
 	network.send('Hello from node ' + str(node), [-1])
-	time.sleep(3)
+	time.sleep(15)
