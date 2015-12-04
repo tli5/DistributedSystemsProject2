@@ -23,7 +23,7 @@ class LeaderNetwork(object):
 		self.thread = [{} for i in self.network.peer]
 		#Attempt connections
 		for i in range(len(self.network.peer)):
-			self.tcpSend('hoopla', i)
+			self.tcpSend('', i)
 	
 	def acceptThread(self):
 		"""Accept incoming connections on a separate thread"""

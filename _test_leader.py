@@ -18,5 +18,6 @@ network.registerReceive(recv)
 print('This is node ' + str(node))
 
 while True:
-	#network.send('Hello from node ' + str(node), [-1])
-	time.sleep(15)
+	text = raw_input()
+	if not text: break
+	network.tcpSend(text, 1-netInternal.node)
