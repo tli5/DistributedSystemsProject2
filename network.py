@@ -18,7 +18,6 @@ class Peer(object):
 class Network(object):
 	def __init__(self, config, node):
 		self.peer = []
-		self.leader = 0
 		self.node = node
 		self.recv = None
 		#Load config
@@ -69,7 +68,6 @@ class Network(object):
 		"""Send to a negative number to send to the leader"""
 		if not targets:
 			targets = range(len(self.peer))
-		targets = [self.leader if i < 0 else i for i in targets]
 		data = pickle.dumps(message)
 		for i in targets:
 			if i == self.node: continue
@@ -79,4 +77,4 @@ class Network(object):
 		#Send to all other nodes before processing locally
 		for i in targets:
 			if i != self.node: continue
-			self.receive(self.node, message)
+			self.receive(self.node, data)
