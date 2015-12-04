@@ -5,7 +5,6 @@ import network
 import socket
 import threading
 import errno
-import time
 
 class LeaderNetwork(object):
 	def __init__(self, network):
@@ -25,29 +24,40 @@ class LeaderNetwork(object):
 	def tcpListen(self):
 		"""Listen for new connections from other processes"""
 		"""This is run on a daemon thread"""
+		#Just connect to everything for now
+		self.tcpSend(None, range(len(self.network.peer)))
 		while True:
 			#Accept connections from other nodes
 			try:
 				con = self.server.accept()
-				node = int(con[0].recv(1))
-				if self.socket[node]: self.socket[node].close()
-				self.socket[node] = con[0]
-				print('connect from ' + str(node))
+				node = int(self.tcpReceive(con[0], True))
+				if self.socket[node] and node < self.network.node:
+					self.socket[node].close()
+					self.socket[node] = None
+				if not self.socket[node]:
+					self.socket[node] = con[0]
+					print('connect from ' + str(node))
+				else:
+					print('ignored connect from ' + str(node))
 			except socket.error as e:
 				#No connections to accept
+				if e.errno != errno.EWOULDBLOCK:
+					print('accept', e)
 				pass
 			#Check for incoming messages
 			for i, sock in enumerate(self.socket):
 				if not sock: continue
 				try:
-					data = sock.recv(4)
-					print(data)
+					data = self.tcpReceive(sock)
+					if data: print('received "'+data+'"')
 				except socket.error as e:
-					if e.errno == errno.ECONNRESET:
+					print('receive', i, e)
+					if e.errno == errno.ECONNRESET or True:
+						print('disconnect', i)
 						self.socket[i] = None
 						sock.close()
-			#Just connect to everything for now
-			self.tcpSend(None, range(len(self.network.peer)))
+			self.tcpSend('asdf', range(len(self.network.peer)))
+		
 	
 	def tcpSend(self, message, targets):
 		"""Send a message to the set of targets"""
@@ -55,20 +65,47 @@ class LeaderNetwork(object):
 		"""This should only be called from the listen thread"""
 		#Establish connections to other nodes
 		for i in targets:
+			if i == self.network.node: continue
 			if self.socket[i]: continue
 			try:
 				con = socket.create_connection(self.network.peer[i].addr(), 1.0)
 				self.socket[i] = con
 				self.tcpSend(str(self.network.node), [i])
+				print('connect to ' + str(i))
 			except socket.error as e:
 				#Still down
+				print('con', i, e)
 				pass
 		#Send the message
 		if message:
 			for i in targets:
+				if i == self.network.node: continue
 				if not self.socket[i]: continue
-				self.socket[i].sendall(message+'\n')
-		print('sent ' + message)
+				try:
+					self.socket[i].setblocking(True)
+					self.socket[i].sendall(message+'\n')
+				except socket.error as e:
+					print('send', i, e)
+			print('sent ' + message)
+	
+	def tcpReceive(self, sock, block = False):
+		"""Receive a message on a tcp socket"""
+		"""Messages are separated by \n"""
+		"""This should only be called from the listen thread"""
+		msg = ''
+		try:
+			sock.setblocking(block)
+			c = sock.recv(1)
+			sock.setblocking(True)
+			while c != '\n':
+				msg += c
+				c = sock.recv(1)
+		except socket.error as e:
+			if e.errno in [errno.EAGAIN, errno.EWOULDBLOCK]:
+				msg = None
+			else:
+				raise
+		return msg
 	
 	def registerReceive(self, func):
 		self.network.registerReceive(func)
