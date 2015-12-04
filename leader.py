@@ -16,111 +16,75 @@ class LeaderNetwork(object):
 		self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.server.bind(self.network.peer[self.network.node].addr())
 		self.server.listen(len(self.network.peer))
-		self.server.settimeout(0.0)
-		#Create a thread
-		self.threadListen = threading.Thread(target = self.tcpListen)
-		self.threadListen.setDaemon(True)
-		self.threadListen.start()
+		#Create threads
+		self.threadAccept = threading.Thread(target = self.acceptThread)
+		self.threadAccept.setDaemon(True)
+		self.threadAccept.start()
+		self.thread = [{} for i in self.network.peer]
+		#Attempt connections
+		for i in range(len(self.network.peer)):
+			self.tcpSend('hoopla', i)
 	
-	def tcpListen(self):
-		"""Listen for new connections from other processes"""
-		"""This is run on a daemon thread"""
-		poll = time.clock()
-		#Just connect to everything for now
-		self.tcpSend("hoopla", range(len(self.network.peer)))
+	def acceptThread(self):
+		"""Accept incoming connections on a separate thread"""
 		while True:
-			#Accept connections from other nodes
-			while self.tcpAccept(): pass
-			#Check for incoming messages
-			for i, sock in enumerate(self.socket):
-				if not sock: continue
-				try:
-					data = self.tcpReceive(sock)
-					if data: print('received "'+data+'"')
-				except socket.error as e:
-					print('receive', i, e)
-					if e.errno == errno.ECONNRESET or True:
-						print('disconnect', i)
-						self.socket[i] = None
-						sock.close()
-			#Confirm the connection is alive
-			if time.clock() > poll:
-				print('ping')
-				for i, sock in enumerate(self.socket):
-					if not sock: continue
-					self.tcpSend('', [i])
-				poll = (time.clock() + 5)
-	
-	def tcpAccept(self):
-		"""Accept an incoming connection"""
-		"""This should only be called from the listen thread"""
-		try:
-			con = self.server.accept()
-			node = int(self.tcpReceive(con[0], True))
-			if self.socket[node] and node < self.network.node:
-				self.socket[node].close()
-				self.socket[node] = None
-			if not self.socket[node]:
-				self.socket[node] = con[0]
-				print('connect from ' + str(node))
-			else:
-				con[0].close()
-				print('ignored connect from ' + str(node))
-		except socket.error as e:
-			#No connections to accept
-			if e.errno != errno.EWOULDBLOCK:
-				print('accept', e)
-			return False
-		return True
-	
-	def tcpSend(self, message, targets):
-		"""Send a message to the set of targets"""
-		"""Connections will be attempted if not established"""
-		"""This should only be called from the listen thread"""
-		#Establish connections to other nodes
-		for i in targets:
-			if i == self.network.node: continue
-			if self.socket[i]: continue
 			try:
-				con = socket.create_connection(self.network.peer[i].addr(), 1.0)
-				self.socket[i] = con
-				self.tcpSend(str(self.network.node), [i])
-				print('connect to ' + str(i))
+				con = self.server.accept()
+				args = (int(con[0].recv(1)), con[0])
+				listen = threading.Thread(target = self.listenThread, args = args)
+				listen.setDaemon(True)
+				listen.start()
 			except socket.error as e:
-				#Still down
-				print('con', i, e)
-				pass
-		#Send the message
-		if message != None:
-			for i in targets:
-				if i == self.network.node: continue
-				if not self.socket[i]: continue
-				try:
-					self.socket[i].settimeout(5.0)
-					self.socket[i].sendall(message+'\n')
-				except socket.error as e:
-					print('send', i, e)
+				if e.errno != errno.EWOULDBLOCK:
+					print('accept', e)
 	
-	def tcpReceive(self, sock, block = False):
-		"""Receive a message on a tcp socket"""
-		"""Messages are separated by \n"""
-		"""This should only be called from the listen thread"""
-		msg = ''
-		try:
-			sock.settimeout(5.0 if block else 0.0)
-			c = sock.recv(1)
-			sock.settimeout(1.0)
-			while c != '\n':
-				msg += c
+	def listenThread(self, node, sock):
+		"""Listen for incoming messages for a single socket on a thread"""
+		self.thread[node][sock] = threading.currentThread()
+		while True:
+			msg = ''
+			try:
 				c = sock.recv(1)
-		except socket.error as e:
-			if e.errno in [errno.EAGAIN, errno.EWOULDBLOCK]:
-				msg = None
+				while c != '\n':
+					msg += c
+					c = sock.recv(1)
+			except socket.error as e:
+				break
+			
+			#Handle the message
+			if msg: self.tcpReceive(msg, node)
+		
+		#Shut down the thread
+		sock.close()
+		del self.thread[node][sock]
+	
+	def tcpSend(self, message, node):
+		"""Find a socket for the node and send the message"""
+		sent = False
+		for sock in self.thread[node]:
+			try:
+				sock.sendall(message+'\n')
+			except socket.error as e:
+				print('send', e)
 			else:
-				raise
-		except socket.timeout:
-			msg = None
-		return msg
+				sent = True
+				break
+		if not sent:
+			try:
+				sock = socket.create_connection(self.network.peer[node].addr())
+				sock.sendall(str(self.network.node))
+				sock.sendall(message+'\n')
+				listen = threading.Thread(target = self.listenThread, args = (node, sock))
+				listen.setDaemon(True)
+				listen.start()
+			except socket.error as e:
+				print('connect', e)
+			else:
+				sent = True
+		return sent
+	
+	def tcpReceive(self, message, node):
+		print(node, message)
 	
 	def registerReceive(self, func):
 		self.network.registerReceive(func)
