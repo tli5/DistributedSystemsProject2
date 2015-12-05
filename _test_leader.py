@@ -20,4 +20,5 @@ print('This is node ' + str(node))
 while True:
 	text = raw_input()
 	if not text: break
-	network.tcpSend(text, 1-netInternal.node)
+	elif text == 'l': print('leader: ' + str(network.leader))
+	else: network.tcpSend(text, 1-netInternal.node)
