@@ -1,6 +1,8 @@
 # paxos-new.py
 #The new and improved implementation of paxos
 
+import threading
+
 class State(object):
 	def __init__(self):
 		self.maxPrepare = -1
@@ -18,10 +20,25 @@ class Proposal(object):
 		self.accVal = None
 		self.stateMode = None
 		self.stateCount = 0
+		#Timeout
+		self.timeout = None
+		self.failFunc = None
+	
+	def __del__(self):
+		if self.timeout:
+			self.timeout.cancel()
+	
+	def fail(self):
+		self.mode('failed')
+		self.timeout.cancel()
+		self.failFunc(self)
 	
 	def mode(self, mode):
 		self.stateMode = mode
 		self.stateCount = 0
+		if self.timeout: self.timeout.cancel()
+		self.timeout = threading.Timer(1, self.fail)
+		self.timeout.start()
 
 class Paxos(object):
 	def __init__(self, network):
@@ -41,9 +58,18 @@ class Paxos(object):
 		#Local proposal number
 		self.num = 0
 	
+	def proposeFail(self, p):
+		if p.num in self.proposals:
+			if self.onFail:
+				self.onFail(p.valueOriginal, p.index)
+			del self.proposals[p.num]
+	
 	def propose(self, value):
 		self.num += 1
-		p = Proposal(len(self.log), self.network.node+self.num*len(self.network.peer), value)
+		index = len(self.log)
+		if None in self.log: index = self.log.index(None)
+		p = Proposal(index, self.network.node+self.num*len(self.network.peer), value)
+		p.failFunc = self.proposeFail
 		p.mode('propose')
 		self.proposals[p.num] = p
 		self.network.send({
@@ -59,6 +85,9 @@ class Paxos(object):
 		state = self.state[index]
 		if data['num'] > state.maxPrepare:
 			state.maxPrepare = data['num']
+			if index < len(self.log):
+				if self.log[index] != None and state.accVal == None:
+					state.accVal = self.log[index]
 			self.network.send({
 				'type': 'promise',
 				'num': data['num'],
@@ -67,9 +96,10 @@ class Paxos(object):
 			}, [node])
 	
 	def handlePromise(self, node, data):
+		if not data['num'] in self.proposals: return
 		p = self.proposals[data['num']]
 		if p.stateMode != 'propose': return
-		if data['accNum'] > p.accNum:
+		if data['accNum'] >= p.accNum:
 			p.accNum = data['accNum']
 			p.accVal = data['accVal']
 		p.stateCount += 1
@@ -100,6 +130,7 @@ class Paxos(object):
 			}, [node])
 	
 	def handleAck(self, node, data):
+		if not data['num'] in self.proposals: return
 		p = self.proposals[data['num']]
 		if p.stateMode != 'accept': return
 		p.stateCount += 1
@@ -121,8 +152,10 @@ class Paxos(object):
 			self.onCommit(self.log[index], index)
 		if node == self.network.node:
 			p = self.proposals[data['num']]
-			if p.value != p.valueOriginal and self.onFail:
-				self.onFail(p.valueOriginal, p.index)
+			if p.value != p.valueOriginal:
+				p.fail()
+			if p.num in self.proposals:
+				del self.proposals[p.num]
 	
 	def receive(self, node, message):
 		type = message['type']
