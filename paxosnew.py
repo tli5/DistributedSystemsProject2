@@ -15,14 +15,20 @@ class Proposal(object):
 		#General state
 		self.accNum = -1
 		self.accVal = None
-		self.accCount = 0
+		self.stateMode = None
+		self.stateCount = 0
+	
+	def mode(self, mode):
+		self.stateMode = mode
+		self.stateCount = 0
 
 class Paxos(object):
 	def __init__(self, network):
 		self.network = network
 		self.network.registerReceive(self.receive)
+		self.majority = len(self.network.peer)
 		
-		self.log = {}
+		self.log = []
 		self.state = {}
 		self.proposals = {}
 		
@@ -31,6 +37,7 @@ class Paxos(object):
 	def propose(self, value):
 		self.num += 1
 		p = Proposal(len(self.log), self.num, value)
+		p.mode('propose')
 		self.proposals[p.num] = p
 		self.network.send({
 			'type': 'prepare',
@@ -54,19 +61,53 @@ class Paxos(object):
 	
 	def handlePromise(self, node, data):
 		p = self.proposals[data['num']]
+		if p.stateMode != 'propose': return
 		if data['accNum'] > p.accNum:
 			p.accNum = data['accNum']
 			p.accVal = data['accVal']
-		p.accCount += 1
-		if p.accCount >= len(self.network.peer):
+		p.stateCount += 1
+		if p.stateCount >= self.majority:
+			p.mode('accept')
 			if p.accNum >= 0:
 				p.value = p.accVal
 			self.network.send({
 				'type': 'accept',
 				'index': p.index,
 				'num': p.num,
+				'val': p.value
+			})
+	
+	def handleAccept(self, node, data):
+		index = data['index']
+		if not index in self.state:
+			self.state[index] = State()
+		state = self.state[index]
+		if data['num'] >= state.maxPrepare:
+			state.accNum = data['num']
+			state.accVal = data['val']
+			self.network.send({
+				'type': 'ack',
+				'index': index,
+				'num': state.accNum,
+				'val': state.accVal
+			}, [node])
+	
+	def handleAck(self, node, data):
+		p = self.proposals[data['num']]
+		if p.stateMode != 'accept': return
+		p.stateCount += 1
+		if p.stateCount >= self.majority:
+			p.mode('commit')
+			self.network.send({
+				'type': 'commit',
+				'index': p.index,
 				'value': p.value
 			})
+	
+	def handleCommit(self, node, data):
+		while len(self.log) <= data['index']:
+			self.log += [None]
+		self.log[data['index']] = data['value']
 	
 	def receive(self, node, message):
 		type = message['type']
@@ -77,5 +118,11 @@ class Paxos(object):
 			self.handlePrepare(node, message)
 		elif type == 'promise':
 			self.handlePromise(node, message)
+		elif type == 'accept':
+			self.handleAccept(node, message)
+		elif type == 'ack':
+			self.handleAck(node, message)
+		elif type == 'commit':
+			self.handleCommit(node, message)
 		else:
 			print('unhandled', message)
