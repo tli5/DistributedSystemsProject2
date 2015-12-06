@@ -109,6 +109,6 @@ def mainMenu() :
 config = str(sys.argv[1])
 node = int(sys.argv[2])
 cal = calendar.Calendar(config, node)
-paxosNode = paxos.Paxos(calendar)
+paxosNode = paxos.Paxos(cal)
 mainMenu()
 

@@ -7,13 +7,14 @@ import calendar
 from pprint import pformat
 
 class Paxos(object):
-	def __init__(self, calendar):
-		nodeNetwork = calendar.log.network
+	def __init__(self, cal):
+		nodeNetwork = cal.log.network
+
 		self.leaderNetwork = leader.LeaderNetwork(nodeNetwork)
 		self.network = nodeNetwork
-		self.node = network.node
-		self.network.registerReceive(udpReceive)
-		self.calendar = calendar
+		self.node = nodeNetwork.node
+		self.network.registerReceive(self.udpReceive)
+		self.calendar = cal
 		self.path = ('paxos' + str(node) + '.sav')
 
 		"""used when current node serves as a proposer"""
