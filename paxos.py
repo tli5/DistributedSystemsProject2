@@ -8,9 +8,9 @@ from pprint import pformat
 
 class Paxos(object):
 	def __init__(self, calendar):
-		network = calendar.log.network
-		self.leaderNetwork = leader.LeaderNetwork(network)
-		self.network = network
+		nodeNetwork = calendar.log.network
+		self.leaderNetwork = leader.LeaderNetwork(nodeNetwork)
+		self.network = nodeNetwork
 		self.node = network.node
 		self.network.registerReceive(udpReceive)
 		self.calendar = calendar
@@ -44,7 +44,8 @@ class Paxos(object):
 	def sendPrepare(self) :
 		data = object()
 		data.type = "prepare"
-		data.prepareNum = self.prepareNum++
+		data.prepareNum = self.prepareNum
+		self.prepareNum += 1
 		"""set response count to 0 every time the proposer tries to propose something"""
 		self.promises = []
 		self.network.send(data)
@@ -98,8 +99,8 @@ class Paxos(object):
 		count = 0
 		lgPromise = None
 
-		for (promise in self.promises ) :
-			count++
+		for promise in self.promises:
+			count += 1
 			if (promise.accNum is not None ):
 				if (lgPromise is None ) :
 					lgPromise = promise
@@ -120,7 +121,7 @@ class Paxos(object):
 		
 
 	def receiveAccept(self, data) :
-		if (data.prepareNum >= self.maxPrepareNum) ) :
+		if (data.prepareNum >= self.maxPrepareNum)  :
 			self.chosen = object()
 			self.chosen.accNum = data.val.accNum
 			self.chosen.accVal = data.val.accVal
@@ -140,22 +141,20 @@ class Paxos(object):
 		if not data.type :
 			print "message received in UDP does not conform to expected protocal"
 			return
-		elif data.type === "prepare" :
+		elif data.type == "prepare" :
 			receivePrepare(data)
-		elif data.type === "" :
+		elif data.type == "" :
 			receivePromise(data)
-		elif data.type === "accept" :
+		elif data.type == "accept" :
 			receiveAccept(data)
-		elif data.type === "ack" :
+		elif data.type == "ack" :
 			receiveAck(data)
-		elif data.type === "commit" :
+		elif data.type == "commit" :
 			receiveCommit(data)
-
-		"""customized data types"""
-		elif data.type === "propose"
+		elif data.type == "propose" :
 			draftProposal(data)
 
-		elif data.type === "lowPrepareNum" :
+		elif data.type == "lowPrepareNum" :
 			"""start over"""
 			sendPrepare()
 
@@ -174,7 +173,7 @@ class Paxos(object):
 		self.network.send(data, target)
 
 	def record(self, chosen) :
-		if (chosen.accVal.type === "add" ) :
+		if (chosen.accVal.type == "add" ) :
 			apt = chosen.accVal
 			conflict = self.calendar.checkConflicts(apt)
 			if (conflict is None ) :

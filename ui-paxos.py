@@ -6,7 +6,7 @@
 
 #Run with python 2.7.10
 #Pass config path and what node index this is
-#Example: ini.py config/local.cfg 0
+#Example: ui-paxos.py config/local.cfg 0
 
 import calendar
 import random
@@ -96,7 +96,7 @@ def proposeAppointment():
 
 def mainMenu() :
 	while True:
-		print 'Menu: ', '1: Propose Appointment', '2: Clear Log Files', '3: Display Appointments'
+		print 'Menu: ', '1: Propose Adding/Deleting Apt', '2: Clear Log Files', '3: Display Appointments'
 		option = raw_input('Option:')
 		exe = {
 			'1': proposeAppointment,

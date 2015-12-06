@@ -8,8 +8,8 @@ import time
 import errno
 
 class LeaderNetwork(object):
-	def __init__(self, network):
-		self.network = network
+	def __init__(self, nodeNetwork):
+		self.network = nodeNetwork
 		#Election state
 		self.leader = 0
 		self.election = None
