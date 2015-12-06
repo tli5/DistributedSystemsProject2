@@ -10,6 +10,14 @@ node = int(sys.argv[1])
 
 cal = paxosnew.Paxos(leader.LeaderNetwork(network.Network('config/local.cfg', node)))
 
+def onCommit(val, index):
+	print(index, val)
+cal.onCommit = onCommit
+def onFail(val, index):
+	print('fail', index, val)
+	cal.propose(val)
+cal.onFail = onFail
+
 print('This is node ' + str(node))
 
 while True:

@@ -12,6 +12,7 @@ class Proposal(object):
 		self.index = index
 		self.num = num
 		self.value = value
+		self.valueOriginal = value
 		#General state
 		self.accNum = -1
 		self.accVal = None
@@ -28,15 +29,21 @@ class Paxos(object):
 		self.network.registerReceive(self.receive)
 		self.majority = (len(self.network.peer)/2)+1
 		
+		#Events
+		self.onCommit = None
+		self.onFail = None
+		
+		#Internal state
 		self.log = []
 		self.state = {}
 		self.proposals = {}
 		
+		#Local proposal number
 		self.num = 0
 	
 	def propose(self, value):
 		self.num += 1
-		p = Proposal(len(self.log), self.num*self.network.node, value)
+		p = Proposal(len(self.log), self.network.node+self.num*len(self.network.peer), value)
 		p.mode('propose')
 		self.proposals[p.num] = p
 		self.network.send({
@@ -101,17 +108,25 @@ class Paxos(object):
 			self.network.send({
 				'type': 'commit',
 				'index': p.index,
-				'value': p.value
+				'value': p.value,
+				'num': p.num
 			})
 	
 	def handleCommit(self, node, data):
-		while len(self.log) <= data['index']:
+		index = data['index']
+		while len(self.log) <= index:
 			self.log += [None]
-		self.log[data['index']] = data['value']
+		self.log[index] = data['value']
+		if self.onCommit:
+			self.onCommit(self.log[index], index)
+		if node == self.network.node:
+			p = self.proposals[data['num']]
+			if p.value != p.valueOriginal and self.onFail:
+				self.onFail(p.valueOriginal, p.index)
 	
 	def receive(self, node, message):
 		type = message['type']
-		print(type, message)
+		print(type, node, message)
 		if not type:
 			print('no type', message)
 		elif type == 'prepare':
