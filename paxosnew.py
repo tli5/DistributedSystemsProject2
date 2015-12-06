@@ -3,7 +3,7 @@
 
 class State(object):
 	def __init__(self):
-		self.maxPrepare = 0
+		self.maxPrepare = -1
 		self.accNum = -1
 		self.accVal = None
 
@@ -26,7 +26,7 @@ class Paxos(object):
 	def __init__(self, network):
 		self.network = network
 		self.network.registerReceive(self.receive)
-		self.majority = len(self.network.peer)
+		self.majority = (len(self.network.peer)/2)+1
 		
 		self.log = []
 		self.state = {}
@@ -36,7 +36,7 @@ class Paxos(object):
 	
 	def propose(self, value):
 		self.num += 1
-		p = Proposal(len(self.log), self.num, value)
+		p = Proposal(len(self.log), self.num*self.network.node, value)
 		p.mode('propose')
 		self.proposals[p.num] = p
 		self.network.send({
