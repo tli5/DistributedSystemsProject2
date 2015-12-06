@@ -9,11 +9,9 @@ from pprint import pformat
 class Paxos(object):
 	def __init__(self, cal):
 		nodeNetwork = cal.log.network
-
 		self.leaderNetwork = leader.LeaderNetwork(nodeNetwork)
-		self.network = nodeNetwork
 		self.node = nodeNetwork.node
-		self.network.registerReceive(self.udpReceive)
+		self.leaderNetwork.registerReceive(self.udpReceive)
 		self.calendar = cal
 		self.path = ('paxos' + str(self.node) + '.sav')
 
@@ -45,31 +43,31 @@ class Paxos(object):
 		self.prepareNum += 1
 		"""set response count to 0 every time the proposer tries to propose something"""
 		self.promises = []
-		self.network.send(data)
+		self.leaderNetwork.send(data)
 
 	def sendPromise(self, val) :
 		data = object()
 		data.val = val
 		data.type = "promise"
-		self.network.send(data)
+		self.leaderNetwork.send(data)
 
 	def sendAccept(self, val) :
 		data = object()
 		data.val = val
 		data.type = "accept"
-		self.network.send(data)
+		self.leaderNetwork.send(data)
 
 	def sendAck(self, val) :
 		data = object()
 		data.val = val
 		data.type = "ack"
-		self.network.send(data)
+		self.leaderNetwork.send(data)
 
 	def sendCommit(self, val) :
 		data = object()
 		data.val = val
 		data.type = "commit"
-		self.network.send(data)
+		self.leaderNetwork.send(data)
 		record(data.chosen)
 
 	def draftProposal(self, data) :
@@ -87,10 +85,10 @@ class Paxos(object):
 			data = object()
 			data.type = "lowPrepareNum"
 			data.val = self.maxPrepareNum
-			self.network.send(data)
+			self.leaderNetwork.send(data)
 
 	def receivePromise(self, data) :
-		majority = len(self.network.peer) / 2 + 1
+		majority = len(self.leaderNetwork.peer) / 2 + 1
 		self.promises.append(data.val)
 
 		count = 0
@@ -167,7 +165,7 @@ class Paxos(object):
 		data.val.type = aptInfo.type
 		data.type = "propose"
 		target = {leaderNode}
-		self.network.send(data, target)
+		self.leaderNetwork.send(data, target)
 
 	def record(self, chosen) :
 		if (chosen.accVal.type == "add" ) :
