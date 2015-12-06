@@ -15,11 +15,7 @@ class Paxos(object):
 		self.node = nodeNetwork.node
 		self.network.registerReceive(self.udpReceive)
 		self.calendar = cal
-		self.path = ('paxos' + str(node) + '.sav')
-
-		"""used when current node serves as a proposer"""
-		hd = open(self.path, "rb")
-		status = pickle.load(hd)
+		self.path = ('paxos' + str(self.node) + '.sav')
 
 		"""load backup if exists"""
 		try:

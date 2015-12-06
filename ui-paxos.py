@@ -98,11 +98,13 @@ def mainMenu() :
 	while True:
 		print 'Menu: ', '1: Propose Adding/Deleting Apt', '2: Clear Log Files', '3: Display Appointments'
 		option = raw_input('Option:')
+
 		exe = {
 			'1': proposeAppointment,
 		    '2': clearLog,
 		    '3': showAppointments
 		}[option]
+		
 		exe()
 
 
