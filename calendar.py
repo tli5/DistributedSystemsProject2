@@ -41,7 +41,7 @@ def eventIsDel(e):
 class Calendar(object):
 	def __init__(self, config, node):
 		self.log = log.Log(config, node)
-		self.log.registerReceive(self.receive)
+		#self.log.registerReceive(self.receive)
 		self.node = node
 	
 	def getAppointments(self, node = None):
@@ -53,11 +53,6 @@ class Calendar(object):
 		opDel = [e.op for e in self.log.events if eventIsDel(e)]
 		appointments = [op for op in opAdd if op.name not in opDel]
 		return [apt for apt in appointments if node in apt.members]
-	
-	def getAppointmentsByNodes(self):
-		"""Get a list of appointments for each node acknowledged by the current node"""
-		peerCount = len(self.log.network.peer)
-		return [self.getAppointments(i) for i in range(peerCount)]
 
 	def addAppointment(self, apt):
 		"""Add an appointment to the calendar"""

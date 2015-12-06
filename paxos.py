@@ -7,7 +7,8 @@ import calendar
 from pprint import pformat
 
 class Paxos(object):
-	def __init__(self, network, calendar):
+	def __init__(self, calendar):
+		network = calendar.log.network
 		self.leaderNetwork = leader.LeaderNetwork(network)
 		self.network = network
 		self.node = network.node
@@ -151,6 +152,9 @@ class Paxos(object):
 			receiveCommit(data)
 
 		"""customized data types"""
+		elif data.type === "propose"
+			draftProposal(data)
+
 		elif data.type === "lowPrepareNum" :
 			"""start over"""
 			sendPrepare()
@@ -159,11 +163,25 @@ class Paxos(object):
 		self.save()
 		return
 
+	def proposeAppointment(aptInfo) :
+		leaderNode = leaderNetwork.leader
+		data = object()
+		data.val = object()
+		data.val.apt = aptInfo.apt
+		data.val.type = aptInfo.type
+		data.type = "propose"
+		target = {leaderNode}
+		self.network.send(data, target)
+
 	def record(self, chosen) :
-		apt = chosen.accVal
-		conflict = self.calendar.checkConflicts(apt)
-		if (conflict is None ) :
-			self.calendar.addAppointment(apt)
+		if (chosen.accVal.type === "add" ) :
+			apt = chosen.accVal
+			conflict = self.calendar.checkConflicts(apt)
+			if (conflict is None ) :
+				self.calendar.addAppointment(apt)
+		else :
+			self.calendar.removeAppointment(chosen.accVal.index)
+		
 
 	def save(self):
 		"""Write the current status to disk"""

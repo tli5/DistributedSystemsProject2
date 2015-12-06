@@ -26,7 +26,7 @@ def evSave(event):
 class Log(object):
 	def __init__(self, config, node):
 		self.network = network.Network(config, node)
-		self.network.registerReceive(self.receive)
+		#self.network.registerReceive(self.receive)
 		count = len(self.network.peer)
 		self.time = [[0 for i in range(count)] for j in range(count)]
 		self.events = set()
