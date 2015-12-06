@@ -52,6 +52,10 @@ class Log(object):
 		self.events.add(event)
 		self.save()
 	
+	def logEvent(self, event):
+		self.events.add(event)
+		self.save()
+
 	def send(self, nodes = None):
 		"""Send an updated copy of the log to nodes"""
 		if not nodes:
