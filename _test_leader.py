@@ -7,8 +7,7 @@ import leader
 
 node = int(sys.argv[1])
 
-netInternal = network.Network('config/local.cfg', node)
-network = leader.LeaderNetwork(netInternal)
+network = leader.LeaderNetwork(network.Network('config/local.cfg', node))
 
 def recv(msg, src):
 	print(src, msg)
@@ -21,4 +20,4 @@ while True:
 	text = raw_input()
 	if not text: break
 	elif text == 'l': print('leader: ' + str(network.leader))
-	else: network.tcpSend(text, 1-netInternal.node)
+	else: network.send(text, [1-network.node, -1])

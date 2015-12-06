@@ -10,11 +10,13 @@ import errno
 class LeaderNetwork(object):
 	def __init__(self, nodeNetwork):
 		self.network = nodeNetwork
+		self.peer = [network.Peer(peer.ip, peer.port+1) for peer in self.network.peer]
+		self.node = self.network.node
 		#Election state
 		self.leader = 0
 		self.election = None
 		#Create threads
-		self.thread = [{} for i in self.network.peer]
+		self.thread = [{} for i in self.peer]
 		self.threadAccept = threading.Thread(target = self.acceptThread)
 		self.threadAccept.setDaemon(True)
 		self.threadAccept.start()
@@ -25,8 +27,8 @@ class LeaderNetwork(object):
 	def acceptThread(self):
 		"""Accept incoming connections on a separate thread"""
 		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server.bind(self.network.peer[self.network.node].addr())
-		server.listen(len(self.network.peer))
+		server.bind(self.peer[self.node].addr())
+		server.listen(len(self.peer))
 		while True:
 			try:
 				con = server.accept()
@@ -77,8 +79,8 @@ class LeaderNetwork(object):
 				break
 		if not sent:
 			try:
-				sock = socket.create_connection(self.network.peer[node].addr())
-				sock.sendall(str(self.network.node))
+				sock = socket.create_connection(self.peer[node].addr())
+				sock.sendall(str(self.node))
 				sock.sendall(message+'\n')
 				listen = threading.Thread(target = self.listenThread, args = (node, sock))
 				listen.setDaemon(True)
@@ -92,11 +94,11 @@ class LeaderNetwork(object):
 	def tcpReceive(self, message, node):
 		if message == "coordinator":
 			self.leader = node
-			if self.network.node < node:
+			if self.node < node:
 				if not self.electionActive():
 					self.electionBegin()
 		elif message == "election":
-			if self.network.node < node:
+			if self.node < node:
 				self.tcpSend("ok", node)
 			if not self.electionActive():
 				self.electionBegin()
@@ -116,14 +118,14 @@ class LeaderNetwork(object):
 		if self.election:
 			self.election.cancel()
 			self.election = None
-		for i in range(self.network.node):
+		for i in range(self.node):
 			self.tcpSend("election", i)
 		self.election = threading.Timer(1, self.electionWin)
 		self.election.start()
 	
 	def electionWin(self):
 		self.election = None
-		for i in range(len(self.network.peer)):
+		for i in range(len(self.peer)):
 			self.tcpSend("coordinator", i)
 	
 	
