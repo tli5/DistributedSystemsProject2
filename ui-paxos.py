@@ -24,14 +24,14 @@ def addAppointment():
 	memberStrArr = raw_input('appointment members(format [A B C]):' ).split(' ')
 	members = [int(memberStr) for memberStr in memberStrArr ]
 	appointment = calendar.Appointment(name, day, start, stop, members)
-	aptInfo = object()
-	aptInfo.apt = appointment
-	aptInfo.type = "add"
+	event = {}
+	event['apt'] = appointment
+	event['type'] = "add"
 	try:
-		paxosNode.proposeAppointment(aptInfo)
+		paxosNode.proposeAppointment(event)
 		print('inserted appointment: ' + str(appointment))
 	except Exception as e:
-		print('conflict')
+		print e 
 
 
 def delAppointment():
@@ -43,10 +43,10 @@ def delAppointment():
 		index = int(raw_input('index of appointment to delete:') )
 		#cal.removeAppointment(nodesAppointments[node][index])
 
-		aptInfo = object()
-		aptInfo.type = "del"
-		aptInfo.index = index
-		paxosNode.proposeAppointment(aptInfo)
+		event = {}
+		event['type'] = "del"
+		event['index'] = index
+		paxosNode.proposeAppointment(event)
 		print('deleted appointment: ' + nodesAppointments[node][index].name)
 		print 'current appointments:'
 		showAppointments()
@@ -58,7 +58,7 @@ def printTime(time):
 	return (str) (time / 2) + ':' + ('00' if time % 2 == 0 else '30')
 
 def showAppointments():
-	nodesAppointments = cal.getAppointmentsByNodes()
+	nodesAppointments = cal.getAppointments()
 	DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 	for node in range (len(nodesAppointments) ):
@@ -77,7 +77,7 @@ def showAppointments():
 	return nodesAppointments
 
 def clearLog():
-	filePaths = {"./data*.sav", "paxos*.sav" }
+	filePaths = ["./data*.sav", "paxos*.sav" ]
 	for filePath in filePaths :
 		files = glob.glob(filePath)
 		for file in files:
