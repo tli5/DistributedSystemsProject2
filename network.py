@@ -61,6 +61,7 @@ class Network(object):
 	
 	def receive(self, node, message):
 		"""A message has been received"""
+		print node, pickle.loads(message)
 		if self.recv: self.recv(node, pickle.loads(message))
 	
 	def send(self, message, targets = None):
