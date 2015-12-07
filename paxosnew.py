@@ -235,6 +235,7 @@ class Paxos(object):
 			for i in stateData:
 				self.state[i] = State(stateData[i])
 		except Exception as e:
+			print(e)
 			self.state = {}
 			self.log = []
 	
@@ -248,4 +249,5 @@ class Paxos(object):
 		for i in stateData:
 			stateData[i] = stateData[i].__dict__
 		f.write(pformat(stateData))
+		f.write('\n')
 		f.close()

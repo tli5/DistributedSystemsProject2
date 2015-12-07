@@ -41,16 +41,32 @@ def eventIsDel(e):
 class Calendar(object):
 	def __init__(self, config, node, paxos):
 		self.paxos = paxos
+		self.paxos.onFail = self.retryAction
 		self.node = node
+	
+	def retryAction(self, evt, index):
+		"""A proposal failed, try it again"""
+		if eventIsAdd(evt):
+			if not self.checkConflicts(aptLoad(evt)):
+				self.paxos.propose(evt)
+		elif eventIsDel(evt):
+			names = [apt.name for apt in self.getAllAppointments()]
+			if evt in names:
+				self.paxos.propose(evt)
+	
+	def getAllAppointments(self):
+		"""Get a list of all appointments in the log"""
+		"""Order is completely arbitrary"""
+		opAdd = [aptLoad(e) for e in self.paxos.retrieveLog() if eventIsAdd(e)]
+		opDel = [e for e in self.paxos.retrieveLog() if eventIsDel(e)]
+		return [op for op in opAdd if op.name not in opDel]
 	
 	def getAppointments(self, node = None):
 		"""Get a list of all appointments in the local calendar"""
 		"""Order is completely arbitrary"""
 		if node == None:
 			node = self.node
-		opAdd = [aptLoad(e) for e in self.paxos.retrieveLog() if eventIsAdd(e)]
-		opDel = [e for e in self.paxos.retrieveLog() if eventIsDel(e)]
-		appointments = [op for op in opAdd if op.name not in opDel]
+		appointments = self.getAllAppointments()
 		return [apt for apt in appointments if node in apt.members]
 	
 	def getAppointmentsByNodes(self):
@@ -77,9 +93,9 @@ class Calendar(object):
 
 	def checkConflicts(self, apt):
 		"""Check if an appointment conflicts with the local calendar"""
-		for other in self.getAppointments():
+		for other in self.getAllAppointments():
 			if apt == other:
 				continue
-			if apt.checkConflict(other):
+			if apt.checkConflict(other) and (set(apt.members) & set(other.members)):
 				return other
 		return None
