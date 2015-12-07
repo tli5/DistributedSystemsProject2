@@ -87,7 +87,8 @@ class LeaderNetwork(object):
 				listen.setDaemon(True)
 				listen.start()
 			except socket.error as e:
-				print('connect', e)
+				#print('connect', e)
+				pass
 			else:
 				sent = True
 		return sent
@@ -107,7 +108,6 @@ class LeaderNetwork(object):
 			if self.election:
 				self.election.cancel()
 				self.election = None
-		print(node, message)
 	
 	
 	def electionActive(self):

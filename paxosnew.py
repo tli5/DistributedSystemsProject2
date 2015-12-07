@@ -202,7 +202,6 @@ class Paxos(object):
 	
 	def receive(self, node, message):
 		type = message['type']
-		print(type, node, message)
 		if not type:
 			print('no type', message)
 		elif type == 'numreq':
