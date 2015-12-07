@@ -26,11 +26,17 @@ def addAppointment():
 	members = [int(memberStr) for memberStr in memberStrArr ]
 	appointment = paxosCalendar.Appointment(name, day, start, stop, members)
 
+	DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 	try:
 		cal.addAppointment(appointment)
 		print('appointment to add: ' + str(appointment))
-	except Exception as e:
-		print e 
+	except Exception as other:
+		other = other[0]
+		print "conflicting with event:"
+		print 'Name:', other.name
+		print '\ton', DAYS[other.day], 'From', printTime(other.start), 'To', printTime(other.end)
+		if len(other.members) > 1 :
+			print '\tmembers:', str(other.members )
 
 
 def delAppointment():
@@ -38,10 +44,12 @@ def delAppointment():
 	nodesAppointments = showAppointments()
 	if nodesAppointments:
 		node = cal.node
-		index = int(raw_input('index of appointment to delete:') )
+		index = int(raw_input('name of appointment to delete:') )
 		cal.removeAppointment(nodesAppointments[node][index])
 		print('deleted appointment: ' + nodesAppointments[node][index].name)
+		print '------------------------------------'
 		print 'current appointments:'
+		time.sleep(1)
 		showAppointments()
 	else:
 		print('no appointments available')
@@ -62,7 +70,7 @@ def showAppointments():
 		
 		for i in range(len(appointments)):
 			appointment = appointments[i]
-			print 'Name:', appointment.name
+			print 'Name:', appointment.name, "index:", i
 			print '\ton', DAYS[appointment.day], 'From', printTime(appointment.start), 'To', printTime(appointment.end)
 			if len(appointment.members) > 1 :
 				print '\tmembers:', str(appointments[i].members )
