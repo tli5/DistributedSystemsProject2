@@ -24,6 +24,6 @@ while True:
 	text = raw_input()
 	if not text: break
 	elif text == 'leader': print('leader: ' + str(cal.network.leader))
-	elif text == 'propoals': print('proposals: ' + str(cal.proposals))
+	elif text == 'proposals': print('proposals: ' + str(cal.proposals))
 	elif text == 'log': print('log: ' + str(cal.retrieveLog()))
 	else: cal.propose(text)

@@ -2,12 +2,19 @@
 #The new and improved implementation of paxos
 
 import threading
+from pprint import pformat
 
 class State(object):
-	def __init__(self):
+	def __init__(self, data = None):
 		self.maxPrepare = -1
 		self.accNum = -1
 		self.accVal = None
+		
+		#Load from '__dict__'
+		if data != None:
+			self.maxPrepare = data['maxPrepare']
+			self.accNum = data['accNum']
+			self.accVal = data['accVal']
 
 class Proposal(object):
 	def __init__(self, index, num, value):
@@ -61,6 +68,10 @@ class Paxos(object):
 		#When we get a number form the leader it is actually proposed
 		self.proposalQueue = []
 		self.num = 0
+		
+		#Save/load
+		self.path = ('data' + str(self.network.node) + '.sav')
+		self.load()
 	
 	def retrieveLog(self):
 		return [ev for ev in self.log if ev != None]
@@ -91,6 +102,7 @@ class Paxos(object):
 			'type': 'numset',
 			'num': self.num
 		}, [node])
+		self.save()
 	
 	def handleNumSet(self, node, data):
 		self.num = max(data['num'], self.num)
@@ -104,6 +116,7 @@ class Paxos(object):
 				'index': p.index,
 				'num': p.num
 			})
+		self.save()
 	
 	def handlePrepare(self, node, data):
 		index = data['index']
@@ -121,6 +134,7 @@ class Paxos(object):
 				'accNum': state.accNum,
 				'accVal': state.accVal
 			}, [node])
+		self.save()
 	
 	def handlePromise(self, node, data):
 		if not data['num'] in self.proposals: return
@@ -155,6 +169,7 @@ class Paxos(object):
 				'num': state.accNum,
 				'val': state.accVal
 			}, [node])
+		self.save()
 	
 	def handleAck(self, node, data):
 		if not data['num'] in self.proposals: return
@@ -183,6 +198,7 @@ class Paxos(object):
 				p.fail()
 			if p.num in self.proposals:
 				del self.proposals[p.num]
+		self.save()
 	
 	def receive(self, node, message):
 		type = message['type']
@@ -208,3 +224,29 @@ class Paxos(object):
 	
 	def becomeLeader(self):
 		self.network.send({'type': 'numreq'})
+	
+	def load(self):
+		try:
+			f = open(self.path, 'r')
+			data = f.read().split('\n')
+			f.close()
+			self.num = eval(data[0])
+			self.log = eval(data[1])
+			stateData = eval('\n'.join(data[2:]))
+			for i in stateData:
+				self.state[i] = State(stateData[i])
+		except Exception as e:
+			self.state = {}
+			self.log = []
+	
+	def save(self):
+		f = open(self.path, 'w')
+		f.write(pformat(self.num))
+		f.write('\n')
+		f.write(pformat(self.log))
+		f.write('\n')
+		stateData = dict(self.state)
+		for i in stateData:
+			stateData[i] = stateData[i].__dict__
+		f.write(pformat(stateData))
+		f.close()
