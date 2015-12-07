@@ -8,13 +8,14 @@
 #Pass config path and what node index this is
 #Example: ui-paxos.py config/local.cfg 0
 
-import calendar
 import random
 import sys
 import time
 import glob
 import os
-import paxos
+import paxosnew
+import paxosCalendar
+import leader, network
 
 def addAppointment():
 	name = raw_input('appointment name:' )
@@ -23,13 +24,11 @@ def addAppointment():
 	stop = int(raw_input('appointment stop:' ))
 	memberStrArr = raw_input('appointment members(format [A B C]):' ).split(' ')
 	members = [int(memberStr) for memberStr in memberStrArr ]
-	appointment = calendar.Appointment(name, day, start, stop, members)
-	event = {}
-	event['apt'] = appointment
-	event['type'] = "add"
+	appointment = paxosCalendar.Appointment(name, day, start, stop, members)
+
 	try:
-		paxosNode.proposeAppointment(event)
-		print('inserted appointment: ' + str(appointment))
+		cal.addAppointment(appointment)
+		print('appointment to add: ' + str(appointment))
 	except Exception as e:
 		print e 
 
@@ -37,16 +36,10 @@ def addAppointment():
 def delAppointment():
 	print('select an appointment to delete:')
 	nodesAppointments = showAppointments()
-
 	if nodesAppointments:
 		node = cal.node
 		index = int(raw_input('index of appointment to delete:') )
-		#cal.removeAppointment(nodesAppointments[node][index])
-
-		event = {}
-		event['type'] = "del"
-		event['index'] = index
-		paxosNode.proposeAppointment(event)
+		cal.removeAppointment(nodesAppointments[node][index])
 		print('deleted appointment: ' + nodesAppointments[node][index].name)
 		print 'current appointments:'
 		showAppointments()
@@ -58,7 +51,7 @@ def printTime(time):
 	return (str) (time / 2) + ':' + ('00' if time % 2 == 0 else '30')
 
 def showAppointments():
-	nodesAppointments = cal.getAppointments()
+	nodesAppointments = cal.getAppointmentsByNodes()
 	DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 	for node in range (len(nodesAppointments) ):
@@ -109,7 +102,8 @@ def mainMenu() :
 
 config = str(sys.argv[1])
 node = int(sys.argv[2])
-cal = calendar.Calendar(config, node)
-paxosNode = paxos.Paxos(cal)
+uiNetwork = network.Network(config, node)
+paxos = paxosnew.Paxos(leader.LeaderNetwork(uiNetwork))
+cal = paxosCalendar.Calendar(config, node, paxos)
 mainMenu()
 
