@@ -62,7 +62,7 @@ def showAppointments():
 		
 		for i in range(len(appointments)):
 			appointment = appointments[i]
-			print 'Name:', appointment.name, ' (Index:'+str(i)+')'
+			print 'Name:', appointment.name
 			print '\ton', DAYS[appointment.day], 'From', printTime(appointment.start), 'To', printTime(appointment.end)
 			if len(appointment.members) > 1 :
 				print '\tmembers:', str(appointments[i].members )

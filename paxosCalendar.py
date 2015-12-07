@@ -61,8 +61,9 @@ class Calendar(object):
 	def addAppointment(self, apt):
 		"""Add an appointment to the calendar"""
 		"""If other users are a member, they will be notified"""
-		if self.checkConflicts(apt):
-			raise Exception('conflict')
+		other = self.checkConflicts(apt)
+		if other :
+			raise Exception(other)
 		#self.log.event(aptSave(apt))
 		#self.log.send(apt.members)
 		self.paxos.propose(aptSave(apt))
