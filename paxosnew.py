@@ -62,6 +62,9 @@ class Paxos(object):
 		self.proposalQueue = []
 		self.num = 0
 	
+	def retrieveLog(self):
+		return [ev for ev in self.log if ev != None]
+	
 	def proposeFail(self, p):
 		if p.num in self.proposals:
 			if self.onFail:
