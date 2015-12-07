@@ -31,6 +31,8 @@ class LeaderNetwork(object):
 	def acceptThread(self):
 		"""Accept incoming connections on a separate thread"""
 		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server.settimeout(1)
+		server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		server.bind(('', self.peer[self.node].port))
 		server.listen(len(self.peer))
 		while not self.exit:
@@ -42,12 +44,14 @@ class LeaderNetwork(object):
 				listen.start()
 			except socket.error as e:
 				if e.errno != errno.EWOULDBLOCK:
-					print('accept', e)
+					#print('accept', e)
+					pass
 		server.close()
 	
 	def listenThread(self, node, sock):
 		"""Listen for incoming messages for a single socket on a thread"""
 		self.thread[node][sock] = threading.currentThread()
+		sock.settimeout(1)
 		while not self.exit:
 			msg = ''
 			try:
@@ -83,7 +87,7 @@ class LeaderNetwork(object):
 				break
 		if not sent:
 			try:
-				sock = socket.create_connection(self.peer[node].addr())
+				sock = socket.create_connection(self.peer[node].addr(), 1)
 				sock.sendall(str(self.node))
 				sock.sendall(message+'\n')
 				listen = threading.Thread(target = self.listenThread, args = (node, sock))

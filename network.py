@@ -25,12 +25,14 @@ class Network(object):
 		
 		#Create a socket
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.socket.settimeout(1)
+		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.socket.bind(('', self.peer[self.node].port))
 		#Create a thread for the socket
+		self.exit = False
 		self.thread = threading.Thread(target = self.listen)
 		self.thread.setDaemon(True)
 		self.thread.start()
-		self.exit = False
 	
 	def __del__(self):
 		self.exit = True

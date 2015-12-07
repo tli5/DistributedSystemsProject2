@@ -107,7 +107,7 @@ def mainMenu() :
 		print 'Menu: ', '1: Propose Adding/Deleting Apt', '2: Clear Local Log Files', '3: Display Appointments', '4: crash node'
 		option = raw_input('Option:')
 		if (option == '4') :
-			os._exit(-1)
+			break
 
 		exe = {
 			'1': proposeAppointment,
@@ -118,3 +118,6 @@ def mainMenu() :
 
 mainMenu()
 
+paxos.network.exit = True
+uiNetwork.exit = True
+paxos.save()
