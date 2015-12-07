@@ -44,6 +44,7 @@ class Paxos(object):
 	def __init__(self, network):
 		self.network = network
 		self.network.registerReceive(self.receive)
+		self.network.onBecomeLeader = self.becomeLeader
 		self.majority = (len(self.network.peer)/2)+1
 		
 		#Events
@@ -55,7 +56,10 @@ class Paxos(object):
 		self.state = {}
 		self.proposals = {}
 		
-		#Local proposal number
+		#Local proposal number/queue
+		#When you request a proposal, it goes here
+		#When we get a number form the leader it is actually proposed
+		self.proposalQueue = []
 		self.num = 0
 	
 	def proposeFail(self, p):
@@ -63,20 +67,40 @@ class Paxos(object):
 			if self.onFail:
 				self.onFail(p.valueOriginal, p.index)
 			del self.proposals[p.num]
+		elif p in self.proposalQueue:
+			if self.onFail:
+				self.onFail(p.valueOriginal, p.index)
+			self.proposalQueue.remove(p)
 	
 	def propose(self, value):
 		self.num += 1
 		index = len(self.log)
 		if None in self.log: index = self.log.index(None)
-		p = Proposal(index, self.network.node+self.num*len(self.network.peer), value)
+		p = Proposal(index, self.num, value)
 		p.failFunc = self.proposeFail
-		p.mode('propose')
-		self.proposals[p.num] = p
+		p.mode('queue')
+		self.proposalQueue.insert(0, p)
+		self.network.send({'type': 'numreq'}, [-1])
+		
+	def handleNumReq(self, node, data):
+		self.num += 1
 		self.network.send({
-			'type': 'prepare',
-			'index': p.index,
-			'num': p.num
-		})
+			'type': 'numset',
+			'num': self.num
+		}, [node])
+	
+	def handleNumSet(self, node, data):
+		self.num = max(data['num'], self.num)
+		if len(self.proposalQueue) > 0:
+			p = self.proposalQueue.pop()
+			p.num = data['num']
+			p.mode('propose')
+			self.proposals[p.num] = p
+			self.network.send({
+				'type': 'prepare',
+				'index': p.index,
+				'num': p.num
+			})
 	
 	def handlePrepare(self, node, data):
 		index = data['index']
@@ -162,6 +186,10 @@ class Paxos(object):
 		print(type, node, message)
 		if not type:
 			print('no type', message)
+		elif type == 'numreq':
+			self.handleNumReq(node, message)
+		elif type == 'numset':
+			self.handleNumSet(node, message)
 		elif type == 'prepare':
 			self.handlePrepare(node, message)
 		elif type == 'promise':
@@ -174,3 +202,6 @@ class Paxos(object):
 			self.handleCommit(node, message)
 		else:
 			print('unhandled', message)
+	
+	def becomeLeader(self):
+		self.network.send({'type': 'numreq'})

@@ -22,6 +22,7 @@ class LeaderNetwork(object):
 		self.threadAccept.start()
 		#Begin an election
 		self.electionBegin()
+		self.onBecomeLeader = None
 	
 	
 	def acceptThread(self):
@@ -127,6 +128,8 @@ class LeaderNetwork(object):
 		self.election = None
 		for i in range(len(self.peer)):
 			self.tcpSend("coordinator", i)
+		if self.onBecomeLeader:
+			self.onBecomeLeader()
 	
 	
 	def registerReceive(self, func):
