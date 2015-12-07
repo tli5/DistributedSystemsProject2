@@ -12,6 +12,7 @@ class LeaderNetwork(object):
 		self.network = nodeNetwork
 		self.peer = [network.Peer(peer.ip, peer.port+1) for peer in self.network.peer]
 		self.node = self.network.node
+		self.exit = False
 		#Election state
 		self.leader = 0
 		self.election = None
@@ -24,13 +25,15 @@ class LeaderNetwork(object):
 		self.electionBegin()
 		self.onBecomeLeader = None
 	
+	def __del__(self):
+		self.exit = True
 	
 	def acceptThread(self):
 		"""Accept incoming connections on a separate thread"""
 		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server.bind(self.peer[self.node].addr())
+		server.bind(('', self.peer[self.node].port))
 		server.listen(len(self.peer))
-		while True:
+		while not self.exit:
 			try:
 				con = server.accept()
 				args = (int(con[0].recv(1)), con[0])
@@ -45,7 +48,7 @@ class LeaderNetwork(object):
 	def listenThread(self, node, sock):
 		"""Listen for incoming messages for a single socket on a thread"""
 		self.thread[node][sock] = threading.currentThread()
-		while True:
+		while not self.exit:
 			msg = ''
 			try:
 				c = sock.recv(1)

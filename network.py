@@ -30,6 +30,10 @@ class Network(object):
 		self.thread = threading.Thread(target = self.listen)
 		self.thread.setDaemon(True)
 		self.thread.start()
+		self.exit = False
+	
+	def __del__(self):
+		self.exit = True
 	
 	def loadConfig(self, path):
 		"""Load the network config file"""
@@ -48,7 +52,7 @@ class Network(object):
 	def listen(self):
 		"""Poll the socket for incoming messages"""
 		"""Run on a separate thread"""
-		while True:
+		while not self.exit:
 			try:
 				data, addr = self.socket.recvfrom(4096)
 				for i in range(len(self.peer)):
@@ -58,6 +62,7 @@ class Network(object):
 					break
 			except socket.error as error:
 				pass
+		self.socket.close()
 	
 	def receive(self, node, message):
 		"""A message has been received"""

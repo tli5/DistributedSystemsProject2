@@ -17,6 +17,12 @@ import paxosnew
 import paxosCalendar
 import leader, network
 
+config = str(sys.argv[1])
+node = int(sys.argv[2])
+uiNetwork = network.Network(config, node)
+paxos = paxosnew.Paxos(leader.LeaderNetwork(uiNetwork))
+cal = paxosCalendar.Calendar(config, node, paxos)
+
 def addAppointment():
 	name = raw_input('appointment name:' )
 	day = int(raw_input('appointment day:' ))
@@ -101,7 +107,7 @@ def mainMenu() :
 		print 'Menu: ', '1: Propose Adding/Deleting Apt', '2: Clear Local Log Files', '3: Display Appointments', '4: crash node'
 		option = raw_input('Option:')
 		if (option == '4') :
-			break
+			os._exit(-1)
 
 		exe = {
 			'1': proposeAppointment,
@@ -110,11 +116,5 @@ def mainMenu() :
 		}[option]
 		exe()
 
-
-config = str(sys.argv[1])
-node = int(sys.argv[2])
-uiNetwork = network.Network(config, node)
-paxos = paxosnew.Paxos(leader.LeaderNetwork(uiNetwork))
-cal = paxosCalendar.Calendar(config, node, paxos)
 mainMenu()
 
