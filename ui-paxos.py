@@ -111,8 +111,10 @@ def mainMenu() :
 	while True:
 		print 'Menu: ', '1: Propose Adding/Deleting Apt', '2: Clear Local Log Files', '3: Display Appointments', '4: crash node'
 		option = raw_input('Option:')
-		if (option == '4') :
+		if (option == '4'):
 			break
+		elif (option == '5'):
+			print('Leader: ' + str(paxos.network.leader))
 		if not option in exe:
 			continue
 		exe[option]()
