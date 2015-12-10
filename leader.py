@@ -42,9 +42,11 @@ class LeaderNetwork(object):
 				listen = threading.Thread(target = self.listenThread, args = args)
 				listen.setDaemon(True)
 				listen.start()
+			except socket.timeout:
+				pass
 			except socket.error as e:
 				if e.errno != errno.EWOULDBLOCK:
-					#print('accept', e)
+					print('accept', e)
 					pass
 		server.close()
 	
@@ -136,12 +138,11 @@ class LeaderNetwork(object):
 			self.election = None
 		for i in range(self.node):
 			self.tcpSend("election", i)
-		self.election = threading.Timer(1, self.electionWin)
+		self.election = threading.Timer(self.node+1, self.electionWin)
 		self.election.start()
 	
 	def electionWin(self):
 		self.election = None
-		self.leader = self.node
 		for i in range(len(self.peer)):
 			self.tcpSend("coordinator", i)
 		if self.onBecomeLeader:
