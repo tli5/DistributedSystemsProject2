@@ -84,7 +84,7 @@ class LeaderNetwork(object):
 			try:
 				sock.sendall(message+'\n')
 			except socket.error as e:
-				#print('send', e)
+				print('send', e)
 				pass
 			else:
 				sent = True
