@@ -59,7 +59,10 @@ class LeaderNetwork(object):
 				while c != '\n':
 					msg += c
 					c = sock.recv(1)
+			except socket.timeout as e:
+				continue
 			except socket.error as e:
+				print(e)
 				break
 			
 			#Handle the message
@@ -77,26 +80,28 @@ class LeaderNetwork(object):
 	def tcpSend(self, message, node):
 		"""Find a socket for the node and send the message"""
 		sent = False
-		for sock in self.thread[node]:
+		for sock in list(self.thread[node].keys()):
 			try:
 				sock.sendall(message+'\n')
 			except socket.error as e:
-				print('send', e)
+				#print('send', e)
+				pass
 			else:
 				sent = True
 				break
 		if not sent:
+			sock = None
 			try:
 				sock = socket.create_connection(self.peer[node].addr(), 1)
 				sock.sendall(str(self.node))
 				sock.sendall(message+'\n')
-				listen = threading.Thread(target = self.listenThread, args = (node, sock))
-				listen.setDaemon(True)
-				listen.start()
 			except socket.error as e:
 				#print('connect', e)
 				pass
 			else:
+				listen = threading.Thread(target = self.listenThread, args = (node, sock))
+				listen.setDaemon(True)
+				listen.start()
 				sent = True
 		return sent
 	
