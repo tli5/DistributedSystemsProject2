@@ -245,8 +245,8 @@ class Paxos(object):
 		f.write('\n')
 		f.write(pformat(self.log))
 		f.write('\n')
-		stateData = dict(self.state)
-		for i in stateData:
+		stateData = [None] * len(self.state)
+		for i in self.state:
 			stateData[i] = stateData[i].__dict__
 		f.write(pformat(stateData))
 		f.write('\n')

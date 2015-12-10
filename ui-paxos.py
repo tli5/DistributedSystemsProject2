@@ -120,4 +120,3 @@ mainMenu()
 
 paxos.network.exit = True
 uiNetwork.exit = True
-paxos.save()
