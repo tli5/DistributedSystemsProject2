@@ -136,10 +136,10 @@ class LeaderNetwork(object):
 		if self.election:
 			self.election.cancel()
 			self.election = None
-		for i in range(self.node):
-			self.tcpSend("election", i)
 		self.election = threading.Timer(self.node+1, self.electionWin)
 		self.election.start()
+		for i in range(self.node):
+			self.tcpSend("election", i)
 	
 	def electionWin(self):
 		self.election = None
