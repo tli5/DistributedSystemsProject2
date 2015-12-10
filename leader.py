@@ -55,9 +55,9 @@ class LeaderNetwork(object):
 		while not self.exit:
 			msg = ''
 			try:
-				sock.settimeout(3)
-				c = sock.recv(1)
 				sock.settimeout(1)
+				c = sock.recv(1)
+				sock.settimeout(3)
 				if not c: break
 				while c != '\n':
 					msg += c
@@ -141,6 +141,7 @@ class LeaderNetwork(object):
 	
 	def electionWin(self):
 		self.election = None
+		self.leader = self.node
 		for i in range(len(self.peer)):
 			self.tcpSend("coordinator", i)
 		if self.onBecomeLeader:
