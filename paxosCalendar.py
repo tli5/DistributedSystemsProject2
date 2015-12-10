@@ -47,8 +47,11 @@ class Calendar(object):
 	def retryAction(self, evt, index):
 		"""A proposal failed, try it again"""
 		if eventIsAdd(evt):
-			if not self.checkConflicts(aptLoad(evt)):
+			conflict = self.checkConflicts(aptLoad(evt))
+			if not conflict:
 				self.paxos.propose(evt)
+			else:
+				print "conflicting with event:" + conflict.name
 		elif eventIsDel(evt):
 			names = [apt.name for apt in self.getAllAppointments()]
 			if evt in names:

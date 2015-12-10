@@ -235,13 +235,12 @@ class Paxos(object):
 	def load(self):
 		try:
 			f = open(self.path, 'r')
-			data = f.read().split('\n')
+			data = f.read().split('\n\n')
 			f.close()
 			self.num = eval(data[0])
 			self.log = eval(data[1])
-			stateData = eval('\n'.join(data[2:]))
-			for i in range(len(stateData)):
-				self.state[i] = State(stateData[i])
+			stateData = eval(data[2])
+			self.state = {k: State(v) for k, v in stateData.iteritems()}
 		except Exception as e:
 			print(e)
 			self.state = {}
@@ -250,12 +249,10 @@ class Paxos(object):
 	def save(self):
 		f = open(self.path, 'w')
 		f.write(pformat(self.num))
-		f.write('\n')
+		f.write('\n\n')
 		f.write(pformat(self.log))
-		f.write('\n')
-		stateData = [None] * len(self.state)
-		for i, s in self.state.iteritems():
-			stateData[i] = s.__dict__
+		f.write('\n\n')
+		stateData = {k: v.__dict__ for k, v in self.state.iteritems()}
 		f.write(pformat(stateData))
 		f.write('\n')
 		f.close()
