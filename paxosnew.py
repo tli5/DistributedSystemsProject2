@@ -232,7 +232,7 @@ class Paxos(object):
 			self.num = eval(data[0])
 			self.log = eval(data[1])
 			stateData = eval('\n'.join(data[2:]))
-			for i in stateData:
+			for i in range(len(stateData)):
 				self.state[i] = State(stateData[i])
 		except Exception as e:
 			print(e)

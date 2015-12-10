@@ -62,7 +62,6 @@ class LeaderNetwork(object):
 			except socket.timeout as e:
 				continue
 			except socket.error as e:
-				print(e)
 				break
 			
 			#Handle the message
