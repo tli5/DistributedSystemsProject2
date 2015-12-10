@@ -55,13 +55,17 @@ class LeaderNetwork(object):
 		while not self.exit:
 			msg = ''
 			try:
+				sock.settimeout(3)
 				c = sock.recv(1)
+				sock.settimeout(1)
+				if not c: break
 				while c != '\n':
 					msg += c
 					c = sock.recv(1)
 			except socket.timeout as e:
 				continue
 			except socket.error as e:
+				print(e)
 				break
 			
 			#Handle the message
