@@ -103,18 +103,19 @@ def proposeAppointment():
 
 
 def mainMenu() :
+	exe = {
+		'1': proposeAppointment,
+		'2': clearLog,
+		'3': showAppointments
+	}
 	while True:
 		print 'Menu: ', '1: Propose Adding/Deleting Apt', '2: Clear Local Log Files', '3: Display Appointments', '4: crash node'
 		option = raw_input('Option:')
 		if (option == '4') :
 			break
-
-		exe = {
-			'1': proposeAppointment,
-		    '2': clearLog,
-		    '3': showAppointments
-		}[option]
-		exe()
+		if not option in exe:
+			continue
+		exe[option]()
 
 mainMenu()
 
