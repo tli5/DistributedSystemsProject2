@@ -73,6 +73,14 @@ class Paxos(object):
 		self.path = ('data' + str(self.network.node) + '.sav')
 		self.load()
 	
+	def __del__(self):
+		for p in self.proposalQueue:
+			p.timeout.cancel()
+		for p in self.proposals.values():
+			p.timeout.cancel()
+		self.network.exit = True
+		self.network.network.exit = True
+	
 	def retrieveLog(self):
 		return [ev for ev in self.log if ev != None]
 	
